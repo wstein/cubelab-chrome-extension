@@ -49,3 +49,27 @@ groups: `(RU RF)2` expands to moves, while unsuffixed `(RU RF)` retains the
 existing cycle interpretation. Invalid repeats are rejected without dropping
 their suffix. Regression tests cover prose, offsets, nested groups, inverse
 repeats, URL payloads, and preserved cycle orientation metadata.
+
+### Scanner ownership and invalidation
+
+The content script tracks block and widget records plus the badge nodes it owns.
+Ordinary text/child-list mutations queue the nearest block; redundant subtree
+roots are coalesced. Context, attribute, stylesheet-load, viewport, and settings
+changes recheck the document. Unchanged text and detection settings reuse badges.
+Heading lookup uses document order, excluding badge labels from source text.
+
+Badge insertion at the end of a text node creates no empty sibling. Insertions
+within text record their split, and cleanup rejoins only adjacent nodes from
+those splits, in reverse insertion order. Page-owned markup is preserved.
+Detached owners are removed from the records, including sibling widget badges.
+
+Visibility uses computed styles and layout rectangles at the inline element.
+Hidden content contributes a boundary, and `display: contents` is supported.
+Attribute changes include editing permissions and CSS selectors. CSSOM-only
+changes and animations require the documented manual rescan when no observed
+DOM, load, or resize event occurs.
+
+The existing 32,000-character, 100,000-node, and 500-badge bounds remain.
+At the badge cap, mutations recheck the document so freed slots can be filled.
+Malformed URI escapes do not abort scanning. The 50-test suite verifies these
+behaviors, including incremental traversal and stable node identity.

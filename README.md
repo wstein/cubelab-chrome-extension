@@ -70,6 +70,16 @@ Limitations: no OCR, PDF viewer, canvas extraction, closed shadow DOM, cross-ori
 
 ## Development and validation
 
+Text and child-node updates rescan the affected block or subtree. Unchanged
+blocks and widgets keep their existing badges. Heading, attribute, stylesheet,
+viewport, and settings changes trigger a broader check because they can change
+visibility or cube-size inference. Disabling detection removes owned badges and
+rejoins only text nodes split by the extension. CSS-hidden inline content is
+excluded and separates surrounding notation.
+
+Use **Scan again** after changes made only through stylesheet CSSOM methods or
+CSS animations; these changes do not necessarily produce observable DOM events.
+
 Use Node 22.22.2+, 24.15.0+, or 26+ (matching the development dependencies):
 
 ```sh

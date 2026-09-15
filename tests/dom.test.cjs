@@ -5,14 +5,18 @@ const path = require("node:path");
 const { JSDOM } = require("jsdom");
 const D = require("../detector");
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-async function setup(html, settings = {}) {
+async function setup(
+  html,
+  settings = {},
+  url = "https://example.com/3x3/algorithms",
+) {
   const dom = new JSDOM(html, {
-    url: "https://example.com/3x3/algorithms",
+    url,
     runScripts: "outside-only",
   });
   const w = dom.window;
   let message, changed;
-  // jsdom has no layout engine. Supply visible rects; hidden attributes are tested separately.
+  // jsdom supplies computed styles but no layout. Browser tests verify real rects.
   w.Element.prototype.getClientRects = function () {
     return [{ width: 100, height: 20 }];
   };
@@ -43,6 +47,13 @@ async function setup(html, settings = {}) {
     w,
     doc: w.document,
     scan: () => message({ type: "scan" }, null, () => {}),
+    status: () => {
+      let result;
+      message({ type: "status" }, null, (value) => {
+        result = value;
+      });
+      return result;
+    },
     change: async (value) => {
       changed({ settings: { newValue: { ...D.DEFAULTS, ...value } } }, "local");
       await delay(300);
@@ -50,6 +61,130 @@ async function setup(html, settings = {}) {
   };
 }
 const links = (x) => [...x.doc.querySelectorAll(".cubelab-link")];
+
+test("rescans reuse badges and text nodes; disabling restores extension splits", async (t) => {
+  const source = "First: R U F / second: F R U. Done.";
+  const x = await setup(`<p>${source}</p><p>R U F</p>`);
+  t.after(() => x.dom.window.close());
+  const paragraphs = [...x.doc.querySelectorAll("p")];
+  const originalNodes = paragraphs.map((p) => p.firstChild);
+  const initial = paragraphs.map((p) => [...p.childNodes]);
+  const badges = links(x);
+  for (let i = 0; i < 20; i++) x.scan();
+  assert.deepEqual(links(x), badges);
+  paragraphs.forEach((p, i) => assert.deepEqual([...p.childNodes], initial[i]));
+  await x.change({ enabled: false });
+  assert.equal(paragraphs[0].textContent, source);
+  paragraphs.forEach((p, i) => {
+    assert.equal(p.childNodes.length, 1);
+    assert.equal(p.firstChild, originalNodes[i]);
+  });
+  await x.change({});
+  assert.equal(links(x).length, 3);
+});
+
+test("text mutations only inspect the affected block and keep unrelated badges", async (t) => {
+  const x = await setup('<p id="changed">R U F</p><p id="stable">F R U</p>');
+  t.after(() => x.dom.window.close());
+  const stable = x.doc.getElementById("stable"),
+    badge = stable.querySelector("a");
+  let reads = 0;
+  stable.getClientRects = () => {
+    reads++;
+    return [{ width: 100, height: 20 }];
+  };
+  const inputs = [],
+    detect = x.w.CubeLabDetector.detect;
+  x.w.CubeLabDetector.detect = (text, options) => {
+    inputs.push(text);
+    return detect(text, options);
+  };
+  x.doc.getElementById("changed").firstChild.data = "R U R′ U′";
+  await delay(350);
+  assert.equal(reads, 0);
+  assert.deepEqual(inputs, ["R U R′ U′"]);
+  assert.equal(stable.querySelector("a"), badge);
+  assert.equal(x.status().count, 2);
+});
+
+test("CSS-hidden inline content is a boundary and can become visible", async (t) => {
+  const x = await setup(
+    '<style>.concealed { display: none }</style><p id="hidden"><span class="concealed">R U F</span></p><p>R <span style="visibility:hidden">U</span> F</p><p>R <span hidden></span> U F</p><p style="visibility:hidden"><span style="visibility:visible">R U F</span></p><p><span style="display:contents">R U F</span></p>',
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 2);
+  assert.equal(x.doc.getElementById("hidden").querySelector("a"), null);
+  x.doc.querySelector(".concealed").className = "";
+  await delay(350);
+  assert.equal(links(x).length, 3);
+  x.doc.getElementById("hidden").style.display = "none";
+  await delay(350);
+  assert.equal(links(x).length, 2);
+});
+
+test("editing permissions and stylesheet changes invalidate existing badges", async (t) => {
+  const x = await setup('<style></style><p id="alg">R U F</p>');
+  t.after(() => x.dom.window.close());
+  const p = x.doc.getElementById("alg");
+  p.setAttribute("contenteditable", "true");
+  await delay(350);
+  assert.equal(links(x).length, 0);
+  p.setAttribute("contenteditable", "false");
+  await delay(350);
+  assert.equal(links(x).length, 1);
+  x.doc.querySelector("style").textContent = "#alg { visibility: hidden }";
+  await delay(350);
+  assert.equal(links(x).length, 0);
+});
+
+test("heading changes refresh downstream size without using badge labels as context", async (t) => {
+  const x = await setup("<h2>2x2</h2><p>R U F</p><h2>4x4</h2><p>Rw U Rw′</p>");
+  t.after(() => x.dom.window.close());
+  const unchanged = links(x)[1];
+  x.doc.querySelector("h2").textContent = "5x5";
+  await delay(350);
+  assert.ok(links(x)[0].href.includes("size=5"));
+  assert.equal(links(x)[1], unchanged);
+});
+
+test("widget badges are stable, updated, and removed with their owners", async (t) => {
+  const x = await setup(
+    '<div data-alg="R U F">Card</div><twisty-player alg="R U F"></twisty-player>',
+  );
+  t.after(() => x.dom.window.close());
+  const initial = links(x);
+  for (let i = 0; i < 10; i++) x.scan();
+  assert.deepEqual(links(x), initial);
+  x.doc.querySelector("twisty-player").remove();
+  await delay(350);
+  assert.equal(links(x).length, 1);
+  x.doc.querySelector("[data-alg]").removeAttribute("data-alg");
+  await delay(350);
+  assert.equal(links(x).length, 0);
+  assert.equal(x.status().count, 0);
+});
+
+test("removed badges are repaired and the page cap refills after removals", async (t) => {
+  const x = await setup("<p>R U F</p>".repeat(502));
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 500);
+  links(x)[0].remove();
+  await delay(350);
+  assert.equal(links(x).length, 500);
+  x.doc.querySelector("p").remove();
+  await delay(350);
+  assert.equal(links(x).length, 500);
+  assert.equal(x.status().count, 500);
+});
+
+test("malformed URL escapes do not stop initial or subsequent scans", async (t) => {
+  const x = await setup("<p>R U F</p>", {}, "https://example.com/%E0%A4%A");
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 1);
+  x.doc.querySelector("p").textContent = "F R U";
+  await delay(350);
+  assert.ok(links(x)[0].href.includes("F+R+U"));
+});
 test("inline markup, subscript layers, separate algorithms and no duplication", async () => {
   const x = await setup(
     '<title>4x4 cube</title><p id="alg"><b>R</b> U <i>R′</i> U′</p><p>F<sub>2</sub>′ U F<sub>2</sub></p>',
