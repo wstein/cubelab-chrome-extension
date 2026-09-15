@@ -1,5 +1,13 @@
 # Project notes
 
+## SiGN core parser
+
+Numbered lowercase blocks and ranges normalize to modern wide moves. Known
+sizes allow far-side layers and full-width turns to normalize to opposite-face
+turns and rotations. WCA and SSE regressions still pass. Parser verification:
+formatter, lint, 72 unit/DOM tests, and coverage of 100% lines/functions and
+97.29% branches. See [SIGN_NOTATION.md](SIGN_NOTATION.md) for scope.
+
 ## WCA notation verification
 
 WCA Article 12a face moves, rotations, and outer-block moves already use the

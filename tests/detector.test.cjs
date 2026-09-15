@@ -78,7 +78,7 @@ test("wide, slice, rotation, inner-layer and 5x5 notation", () => {
   ])
     assert.equal(detect(s)[0].kind, "moves");
   assert.equal(D.classify("3Rw U 3Rw'").minSize, 4);
-  assert.equal(D.detect("3Rw U 3Rw'", { size: 3 }).length, 0);
+  assert.equal(D.detect("3Rw U 3Rw'", { size: 3 })[0].notation, "x U x'");
   assert.equal(D.classify("6Rw U R"), null);
 });
 test("unicode and compact algorithms", () => {
@@ -338,4 +338,55 @@ test("WCA face, outer-block and rotation notation works across 2x2 through 5x5",
     assert.equal(params.get("moves"), notation);
     assert.equal(Number(params.get("size") || 3), size);
   }
+});
+test("SiGN numbered layers and blocks translate across all supported sizes", () => {
+  for (const size of [2, 3, 4, 5]) {
+    for (const [face, opposite, axis, inverse] of [
+      ["R", "L", "x", false],
+      ["L", "R", "x", true],
+      ["U", "D", "y", false],
+      ["D", "U", "y", true],
+      ["F", "B", "z", false],
+      ["B", "F", "z", true],
+    ]) {
+      for (const suffix of ["", "'", "2", "2'"]) {
+        const end = suffix.includes("2") ? "2" : suffix;
+        const reversed = end === "2" ? "2" : end ? "" : "'";
+        for (const [input, expected] of [
+          [`${size}${face}${suffix}`, opposite + reversed],
+          [
+            `${size}${face.toLowerCase()}${suffix}`,
+            axis + (inverse ? reversed : end),
+          ],
+          [`${size}${face}w${suffix}`, axis + (inverse ? reversed : end)],
+          ...(size > 2
+            ? [
+                [
+                  `2-${size}${face.toLowerCase()}${suffix}`,
+                  `${size - 1}${opposite}w${reversed}`,
+                ],
+              ]
+            : [
+                [
+                  `${face.toLowerCase()}${suffix}`,
+                  axis + (inverse ? reversed : end),
+                ],
+              ]),
+        ]) {
+          const result = D.classify(input, { size, minMoves: 1 });
+          assert.equal(result?.notation, expected, input);
+        }
+      }
+    }
+  }
+  assert.equal(D.classify("3r U 2-3r'", { size: 5 }).notation, "3Rw U 2-3Rw'");
+  assert.equal(
+    D.detect("Algorithm: 3r U 2-3r'.", { size: 5 })[0].notation,
+    "3Rw U 2-3Rw'",
+  );
+  assert.equal(D.classify("[3r,2R]", { size: 4 }).notation, "3Rw 2R 3Rw' 2R'");
+  for (const source of ["4-2r U F", "5r U F", "5R U F"])
+    assert.equal(D.classify(source, { size: 4 }), null);
+  assert.ok(D.parseMoves(Array(2000).fill("2R").join(" "), 2));
+  assert.equal(D.parseMoves(Array(2001).fill("2R").join(" "), 2), null);
 });

@@ -20,7 +20,7 @@
       .replace(/[·•]/g, " ")
       .replace(/\u00a0/g, " ");
   const moveRE =
-    /^(?:[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[URFDLBMESxyzurfdlb])(?:2'?|'2|3|'|i)?/;
+    /^(?:[2-5]-[2-5][urfdlb]|[2-5][urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[URFDLBMESxyzurfdlb])(?:2'?|'2|3|'|i)?/;
   const sseMoveRE =
     /^(?:[CTNVMWS](?:[1-5](?:-[1-5])?)?)?[URFDLB](?:2['-]?|['-]2|3|['-])?/;
   const sseMarker = /[CTNVMWS](?:\d+(?:-\d+)?)?[URFDLB]/;
@@ -84,7 +84,7 @@
     }
     return [range(1, 1)];
   }
-  function parseExpression(source, sseSize = null) {
+  function parseExpression(source, sseSize = null, modernSize = null) {
     if (typeof source !== "string" || !source || source.length > 8000)
       return null;
     const s = sseSize
@@ -151,10 +151,33 @@
             part = sseMove(m[0], sseSize);
           } else {
             let move = m[0]
+              .replace(
+                /^([2-5](?:-[2-5])?)([urfdlb])/,
+                (_, n, f) => n + f.toUpperCase() + "w",
+              )
               .replace(/i$/, "'")
               .replace(/(?:2'|'2)$/, "2")
               .replace(/3$/, "'");
-            const base = move.replace(/[2']$/, "");
+            let base = move.replace(/[2']$/, "");
+            const layer = (
+              /^[urfdlb]$/.test(base) ? base.toUpperCase() + "w" : base
+            ).match(/^(?:([2-5])(?:-([2-5]))?)?([URFDLB])(w)?$/);
+            if (modernSize && layer) {
+              const from = layer[2]
+                ? Number(layer[1])
+                : layer[4]
+                  ? 1
+                  : Number(layer[1] || 1);
+              const to = Number(layer[2] || layer[1] || (layer[4] ? 2 : 1));
+              if (from > to || to > modernSize) throw Error("layer range");
+              if (to === modernSize) {
+                move = sseMove(
+                  `N${from}-${to}${layer[3]}${move.slice(base.length)}`,
+                  modernSize,
+                )[0];
+                base = move.replace(/[2']$/, "");
+              }
+            }
             if (/[MES]/.test(base)) minSize = Math.max(minSize, 3);
             if (/^[2-5]-[2-5]/.test(base)) {
               if (Number(base[0]) > Number(base[2])) throw Error("layer range");
@@ -185,8 +208,8 @@
       return null;
     }
   }
-  function parseMoves(source) {
-    return parseExpression(source);
+  function parseMoves(source, size) {
+    return parseExpression(source, null, size);
   }
   function parseSse(source, size) {
     const parsed = [2, 3, 4, 5].includes(size)
@@ -365,7 +388,7 @@
       }
       return null;
     }
-    const parsed = parseMoves(s);
+    const parsed = parseMoves(s, options.size);
     if (
       parsed &&
       options.size &&
@@ -461,7 +484,7 @@
     if (whole) add(text.indexOf(trim), text.indexOf(trim) + trim.length, whole);
     // Candidate runs bounded by prose; unmatched syntax is rejected, not repaired.
     const run =
-      /(?<![A-Za-z0-9])(?:[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
+      /(?<![A-Za-z0-9])(?:[2-5](?:-[2-5])?[urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
       // Metric suffixes in Pretty Patterns are deliberately outside the notation.

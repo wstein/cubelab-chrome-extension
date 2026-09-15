@@ -54,6 +54,9 @@ a permutation cycle. Invalid repeat counts are rejected, not silently removed.
 See [SSE_NOTATION.md](SSE_NOTATION.md) for the Randelshofer move-family mappings,
 size rules, supported operators, and validation against CubeLab's SSE updates.
 
+See [SIGN_NOTATION.md](SIGN_NOTATION.md) for SiGN numbered layers, lowercase
+blocks, ranges, and opposite-face/full-cube translations.
+
 Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 2026-09-15:
 
 - [URL state reader/writer](https://github.com/wstein/cubelab/blob/e8b8ef45b348a91104b7402238556296eeac03ff/src/client/store.ts): `moves`, `alg`, `size`, `dialect`, `lowercase`, `scheme`.
@@ -120,10 +123,10 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 71 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 72 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 97.13%. This gate covers
+least 93% of branches; the measured branch coverage is 97.29%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
 Six Chromium tests cover SSE size selection and translation, installation, real inline visibility, responsive CSS,
