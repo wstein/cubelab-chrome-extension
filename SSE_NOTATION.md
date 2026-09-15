@@ -34,7 +34,25 @@ accepted. Dots and a copied `↗` badge marker separate moves. A maximum of 2,00
 expanded modern moves, 100 repetitions per group, and 12 nesting levels applies.
 SSE reflection (`*`) and angle-bracket operators are not converted; such
 expressions do not produce partial algorithm links. Permutation-cycle support
-is unchanged and remains limited to 2×2/3×3 state input.
+also supports numbered 4×4/5×5 wing and centre cycles; see below.
+
+## Numbered permutation cycles
+
+Numbered cycles are sent unchanged as `alg` to Setup with the intended size.
+Each comma-separated cycle must contain only wings or only centres. Wing
+indices are 1–2 on 4×4 and 1–3 on 5×5; centre indices are 1–4 and 1–8,
+respectively. Centre orientation prefixes are preserved, including `++` on
+noninitial entries. Duplicate locations and malformed cycles are rejected.
+Large-cube corners and unnumbered large-cube locations are not supported by
+the destination importer. Without a size hint, use 4×4 unless an index requires
+5×5; select the intended size when the numbering alone is ambiguous.
+
+CubeLab `07911e6` adds this Setup input route. Its importer accepts the reported
+example, but a separate upstream correctness issue remains: `(r1,f1,u1)` on
+5×5 produces colour counts U=24, F=24, R=27 instead of 25 each because the cycle
+writes overwrite later source stickers. This extension preserves the original
+notation; it does not compensate for that importer bug. Centre logo orientation
+remains metadata, not a visible colour-facelet rotation.
 
 Without a size hint, detection starts at 3×3 and increases only when required by
 the layers. Notation alone cannot distinguish every 4×4 algorithm from a 5×5

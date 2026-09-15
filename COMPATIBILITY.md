@@ -20,6 +20,10 @@ Run `npx playwright install chromium` followed by `npm run test:browser`.
 These tests replace the original lack of browser validation for core extension
 behavior, but do not upgrade any live-site claim in the table below.
 
+Numbered 4×4/5×5 SSE wing and centre cycles now route to Setup. CubeLab
+`07911e6` accepts their grammar but has a known cycle-application bug; see
+[SSE_NOTATION.md](SSE_NOTATION.md). The observations below predate this support.
+
 ## Historical site observations
 
 | Site                                                                                 | Implementation / evidence                                                                                                                               | Remaining limitation                                                                                                                                           |

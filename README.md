@@ -41,7 +41,7 @@ cube sizes.
 | `cp: …; co: …` with optional `ep: …; eo: …`                     | Check coordinate lengths, ranges and permutation uniqueness                                       |
 | Explicitly labelled `Orbit64: …`                                | Identify token-width candidates and send to CubeLab for actual validation                         |
 
-State detection does **not** prove physical solvability. Permutation-cycle support in CubeLab is principally for 2×2/3×3; bigger-cube cycles are not generally interchangeable. Marked-centre SSE metadata is preserved, but CubeLab's current compatibility report says it is not rendered as centre orientation.
+State detection does **not** prove physical solvability. Numbered SSE wing/centre cycles are detected on 4×4/5×5 and sent unchanged to Setup. See [SSE_NOTATION.md](SSE_NOTATION.md) for supported indices and a known upstream cycle-application bug in CubeLab `07911e6`. Marked-centre orientations are preserved as metadata, not rendered as logo rotations.
 
 Lowercase moves are modern wide turns by default. Some Ruwix 4×4 and old CubeDB pages use `r = 2R`; select **Legacy inner slices** explicitly for those sites. Plaintext `F2'` is a half turn, not a guessed lost subscript. Actual HTML/Unicode subscripts avoid that ambiguity.
 
@@ -123,10 +123,10 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 72 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 74 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 97.29%. This gate covers
+least 93% of branches; the measured branch coverage is 97.56%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
 Seven Chromium tests cover SiGN/SSE size selection and translation, installation, real inline visibility, responsive CSS,

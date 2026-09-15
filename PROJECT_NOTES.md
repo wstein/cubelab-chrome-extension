@@ -1,5 +1,15 @@
 # Project notes
 
+## Numbered SSE permutation detection
+
+The full reported multiline wing/centre state now retains one span and routes
+to Setup as `alg` with size 5. Numbered cycles have size-aware bounds and
+duplicate-location checks. Detection preserves orientation metadata and does
+not apply or validate physical state permutations. Parser phase: formatter,
+lint, 74 unit/DOM tests and 100% line/function, 97.56% branch coverage passed.
+The upstream `07911e6` importer still corrupts colours when applying cycles
+in place; the minimal reproduction is recorded in [SSE_NOTATION.md](SSE_NOTATION.md).
+
 ## SiGN core parser
 
 Numbered lowercase blocks and ranges normalize to modern wide moves. Known

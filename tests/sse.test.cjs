@@ -1,6 +1,57 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const D = require("../detector");
+const numbered = require("./fixtures/numbered-sse.cjs");
+
+test("numbered SSE wings and centres remain one complete size-aware state", () => {
+  for (const options of [{}, { size: 5 }]) {
+    for (const text of [numbered, `Permutation: ${numbered}. Done.`]) {
+      const found = D.detect(text, options);
+      assert.equal(found.length, 1);
+      assert.equal(found[0].kind, "permutation");
+      assert.equal(found[0].size, 5);
+      assert.equal(found[0].notation, numbered);
+      assert.equal(text.slice(found[0].start, found[0].end), numbered);
+      const url = new URL(D.makeURL(found[0]));
+      const params = new URLSearchParams(url.hash.slice(1));
+      assert.equal(url.pathname, "/cubelab/");
+      assert.equal(params.get("alg"), numbered);
+      assert.equal(params.get("size"), "5");
+      assert.equal(params.has("moves"), false);
+    }
+  }
+  assert.equal(D.permutation("(r1,++f4)").size, 4);
+  assert.equal(D.permutation("(ur3,rf3)").size, 5);
+  assert.equal(D.permutation("(+r1)", 4).size, 4);
+  assert.equal(D.permutation("(ur1,rf1)", 5).size, 5);
+});
+
+test("invalid numbered SSE cycles are rejected without cropped cycle links", () => {
+  for (const source of [
+    "r1",
+    "(r1,)",
+    "(r0,f1)",
+    "(r9,f1)",
+    "(ur4,rf4)",
+    "(ur1,r1)",
+    "(uu1,rf1)",
+    "(ud1,rf1)",
+    "(ur1,+rf1)",
+    "(r1,r1)",
+    "(ur1,ru2)",
+    "(r1,f1) (r1,b1)",
+    "(urf1,ubr1)",
+    "(r1,+++f1)",
+    "(R1,F1)",
+  ]) {
+    assert.equal(D.permutation(source, 4), null, source);
+  }
+  for (const size of [2, 3, 4, 6])
+    assert.equal(D.classify(numbered, { size }), null);
+  assert.equal(D.permutation("(ur,uf)", 4), null);
+  for (const source of ["(r1,r9)", "(r1,++f1)2", "(r1,++f1)'"])
+    assert.deepEqual(D.detect(`State: ${source}.`, { size: 4 }), []);
+});
 const parse = (text, size) => D.parseSse(text, size)?.moves.join(" ");
 const sample =
   "D2 F2 L' SF2 L D' WR' D' F2 D↗ WR D' T3B TU T3B TL2 TF' TD' TL MD2 TB TU2 TL2 TF MR2 TU TF'";

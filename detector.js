@@ -318,8 +318,60 @@
       confidence: "high",
     };
   }
-  function permutation(source) {
+  function numberedPermutation(source, requestedSize) {
+    const cycles = [...source.matchAll(/\(([^()]*)\)/g)];
+    if (!cycles.length || source.replace(/\([^()]*\)/g, "").trim()) return null;
+    const groups = cycles.map((cycle) =>
+      cycle[1]
+        .split(",")
+        .map((token) =>
+          token.trim().match(/^(\+\+|\+|-)?([urfdlb]{1,2})([1-8])$/),
+        ),
+    );
+    if (groups.some((group) => group.some((part) => !part))) return null;
+    const parts = groups.flat();
+    const minimum = parts.some(
+      (part) => Number(part[3]) > (part[2].length === 1 ? 4 : 2),
+    )
+      ? 5
+      : 4;
+    const size = requestedSize || minimum;
+    if (![4, 5].includes(size) || size < minimum) return null;
+    const used = new Set();
+    for (const group of groups) {
+      const width = group[0][2].length;
+      for (const [i, part] of group.entries()) {
+        const [, prefix, faces, number] = part;
+        const index = Number(number);
+        if (
+          faces.length !== width ||
+          new Set(faces).size !== width ||
+          ["ud", "rl", "fb"].some((pair) =>
+            [...pair].every((face) => faces.includes(face)),
+          ) ||
+          index > (width === 1 ? (size === 5 ? 8 : 4) : size - 2) ||
+          (width === 2 && i > 0 && prefix)
+        )
+          return null;
+        const sorted = [...faces].sort().join("");
+        const key =
+          sorted + (width === 2 && sorted !== faces ? size - 1 - index : index);
+        if (used.has(key)) return null;
+        used.add(key);
+      }
+    }
+    return {
+      kind: "permutation",
+      format: "SSE",
+      notation: source,
+      size,
+      confidence: "high",
+    };
+  }
+  function permutation(source, size) {
     const s = normalize(source).trim();
+    if (/[urfdlb]\d/i.test(s)) return numberedPermutation(s, size);
+    if (size > 3) return null;
     const cycles = s.match(/\([^()]+\)/g);
     if (!cycles || cycles.join("").replace(/\s/g, "") !== s.replace(/\s/g, ""))
       return null;
@@ -369,9 +421,8 @@
       [24, 54, 96, 150].includes(s.replace(/\s/g, "").length)
     )
       return null;
-    const perm = permutation(s);
-    if (perm)
-      return options.size > 3 ? null : { ...perm, size: options.size || 3 };
+    const perm = permutation(s, options.size);
+    if (perm) return { ...perm, size: perm.size || options.size || 3 };
     if (sseMarker.test(s) || options.dialect === "Sse") {
       for (const size of options.size ? [options.size] : [3, 4, 5]) {
         const parsed = parseSse(s, size);
@@ -503,11 +554,11 @@
       const raw = m[0].trimEnd();
       // Never salvage a cycle by discarding an invalid repeat or inverse.
       if (/^[0-9'’‘′´`)\]]/.test(text.slice(m.index + raw.length))) continue;
-      const p = options.size > 3 ? null : permutation(raw);
+      const p = permutation(raw, options.size);
       add(
         m.index,
         m.index + raw.length,
-        p ? { ...p, size: options.size || 3 } : null,
+        p ? { ...p, size: p.size || options.size || 3 } : null,
       );
     }
     return found.sort((a, b) => a.start - b.start);
