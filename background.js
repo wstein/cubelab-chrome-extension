@@ -1,4 +1,20 @@
-importScripts("detector.js");
+importScripts("detector.js", "settings.js");
+const settingsStore = CubeLabSettings.createStore(chrome.storage.local);
+chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if (message.type !== "settings:update") return;
+  if (
+    sender.id !== chrome.runtime.id ||
+    !sender.url?.startsWith(chrome.runtime.getURL(""))
+  ) {
+    respond({ error: "Settings can only be changed from extension pages." });
+    return;
+  }
+  settingsStore.update(message.change).then(
+    (settings) => respond({ settings }),
+    (error) => respond({ error: error.message }),
+  );
+  return true;
+});
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({

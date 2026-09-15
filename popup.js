@@ -7,22 +7,32 @@
   };
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const host = tab?.url ? new URL(tab.url).hostname : "";
-  $("enabled").checked = settings.enabled;
-  $("site").checked = !settings.disabledHosts.includes(host);
-  $("site").disabled = !host;
-  const prefs = settings.sitePreferences[host] || {};
-  $("size").value = prefs.size || "";
-  $("lowercaseMode").value = prefs.lowercaseMode || settings.lowercaseMode;
+  function show() {
+    $("enabled").checked = settings.enabled;
+    $("site").checked = !settings.disabledHosts.includes(host);
+    const prefs = settings.sitePreferences[host] || {};
+    $("size").value = prefs.size || "";
+    $("lowercaseMode").value = prefs.lowercaseMode || settings.lowercaseMode;
+    for (const id of ["site", "size", "lowercaseMode"]) $(id).disabled = !host;
+  }
+  show();
+  async function save(change) {
+    try {
+      settings = await CubeLabSettings.update(change);
+    } catch (error) {
+      $("status").textContent = error.message;
+    }
+    show();
+  }
   for (const id of ["size", "lowercaseMode"])
     $(id).onchange = async () => {
-      settings.sitePreferences = {
-        ...settings.sitePreferences,
-        [host]: {
-          size: Number($("size").value) || null,
-          lowercaseMode: $("lowercaseMode").value,
+      await save({
+        type: "site",
+        host,
+        patch: {
+          [id]: id === "size" ? Number($(id).value) || null : $(id).value,
         },
-      };
-      await chrome.storage.local.set({ settings });
+      });
     };
   async function status() {
     try {
@@ -34,13 +44,10 @@
     }
   }
   $("enabled").onchange = async () => {
-    settings.enabled = $("enabled").checked;
-    await chrome.storage.local.set({ settings });
+    await save({ type: "global", patch: { enabled: $("enabled").checked } });
   };
   $("site").onchange = async () => {
-    settings.disabledHosts = settings.disabledHosts.filter((h) => h !== host);
-    if (!$("site").checked) settings.disabledHosts.push(host);
-    await chrome.storage.local.set({ settings });
+    await save({ type: "site", host, patch: { enabled: $("site").checked } });
   };
   $("scan").onclick = async () => {
     try {

@@ -13,6 +13,7 @@ module.exports = [
         chrome: "readonly",
         importScripts: "readonly",
         CubeLabDetector: "readonly",
+        CubeLabSettings: "readonly",
       },
     },
     rules: {

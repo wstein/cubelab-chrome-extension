@@ -13,7 +13,6 @@
   $("save").onclick = async () => {
     try {
       const next = {
-        ...settings,
         scheme: $("scheme").value,
         minMoves: Number($("minMoves").value),
         movesTemplate: $("movesTemplate").value.trim(),
@@ -31,18 +30,24 @@
           next,
         );
       }
-      await chrome.storage.local.set({ settings: next });
-      settings = next;
+      const patch = Object.fromEntries(
+        Object.entries(next).filter(([key, value]) => value !== settings[key]),
+      );
+      settings = await CubeLabSettings.update({ type: "global", patch });
+      show();
       $("status").textContent = "Settings saved.";
     } catch (e) {
       $("status").textContent = e.message;
     }
   };
   $("reset").onclick = async () => {
-    settings = { ...D.DEFAULTS };
-    await chrome.storage.local.set({ settings });
-    show();
-    $("status").textContent = "Defaults restored.";
+    try {
+      settings = await CubeLabSettings.update({ type: "reset" });
+      show();
+      $("status").textContent = "Defaults restored.";
+    } catch (error) {
+      $("status").textContent = error.message;
+    }
   };
   $("test").onclick = () => {
     const results = D.detect($("notation").value, {

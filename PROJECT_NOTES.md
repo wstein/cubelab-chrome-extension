@@ -28,3 +28,15 @@ changes so later commits can be reviewed on their own.
 
 The Node engine range matches jsdom's supported versions: 22.22.2+, 24.15.0+,
 or 26+. This corrects the previous overly broad `>=22` requirement.
+
+### Settings ownership
+
+The service worker is the sole settings writer. Popup and options pages send
+validated, field-level operations through `settings.js`; the worker serializes
+read/modify/write operations and reports failures to the initiating page.
+Host preferences merge independently, and options save only edited fields.
+Restore defaults intentionally resets all settings, in the same queue.
+Messages that modify settings are accepted only from this extension's pages.
+
+Regression tests cover concurrent updates, stale UI snapshots, validation,
+failed-write recovery, reset ordering, and visible save errors.

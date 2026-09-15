@@ -20,6 +20,11 @@ For unusual notation, select it and choose **Open selection in CubeLab** from th
 
 Size is inferred from explicit widget puzzle attributes, nearby headings, page title/URL, facelet count, or minimum layer requirements. Ordinary algorithms without a size hint default to 3×3. **Set the size in the popup on mixed-size pages or timers when their selected puzzle is not exposed in text.** Recognizable 6×6/7×7 and non-cube headings are excluded. This is a heuristic, not a general puzzle classifier.
 
+Settings changes preserve unrelated preferences made in other open extension
+pages. Save errors appear in the page where the change was made. **Restore
+defaults** resets all preferences, including disabled websites and site-specific
+cube sizes.
+
 ## Notation coverage
 
 | Input                                                           | Handling                                                                                          |
@@ -82,7 +87,12 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-34 automated tests passed at delivery: detector/URL tests plus DOM integration tests for inline text, updates, duplicate prevention, exclusions, settings, mixed-size galleries and widget attributes. The downloaded Randelshofer example HTML produced 5 links and the Ruwix patterns HTML produced 64 links. These are DOM checks with simulated visibility, not browser screenshots or proof that every resulting state was accepted by the live CubeLab deployment.
+The automated suite covers detector/URL behavior, concurrent settings updates,
+and DOM integration for inline text, updates, duplicate prevention, exclusions,
+mixed-size galleries and widget attributes. The original downloaded Randelshofer
+example HTML produced 5 links and the Ruwix patterns HTML produced 64 links.
+These are DOM checks with simulated visibility, not browser screenshots or proof
+that every resulting state was accepted by the live CubeLab deployment.
 
 A Chrome binary was unavailable and its download timed out. Therefore installation, actual Chrome extension APIs, live hydration, site CSS interactions, and end-to-end CubeLab rendering still need a real-browser smoke check. Open the popup and settings after loading, then check both example sites, a 4×4/5×5 algorithm, a dynamic page, site disabling and the selection context menu.
 
