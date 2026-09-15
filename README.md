@@ -120,13 +120,13 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 68 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 70 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 97.10%. This gate covers
+least 93% of branches; the measured branch coverage is 97.13%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
-Five Chromium tests cover installation, real inline visibility, responsive CSS,
+Six Chromium tests cover SSE size selection and translation, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
 popup/options persistence, site disabling, widget sizes/setup, context-menu
 registration, and badge navigation. The destination is intercepted to verify

@@ -305,7 +305,11 @@
     const setup = widget.getAttribute("experimental-setup-alg");
     if (setup) {
       if (setup.length > 8000) return null;
-      match.setup = setup;
+      if (match.format === "SSE") {
+        const parsed = D.parseSse(setup, match.size);
+        if (!parsed) return null;
+        match.setup = parsed.moves.join(" ");
+      } else match.setup = setup;
     }
     return match;
   }

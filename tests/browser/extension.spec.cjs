@@ -1,5 +1,55 @@
 const { test, expect } = require("./fixtures.cjs");
 
+test("SSE page links and tester preserve the intended cube size", async ({
+  page,
+  site,
+  context,
+  extensionId,
+}) => {
+  const sample =
+    "D2 F2 L' SF2 L D' WR' D' F2 D↗ WR D' T3B TU T3B TL2 TF' TD' TL MD2 TB TU2 TL2 TF MR2 TU TF'";
+  await page.goto(site);
+  await page.evaluate((sample) => {
+    document.body.innerHTML = "<h1>Professor Cube</h1><p id='sse'></p>";
+    document.querySelector("#sse").textContent = sample;
+  }, sample);
+  const badge = page.locator("#sse .cubelab-link");
+  await expect(badge).toHaveCount(1);
+  await expect(badge).toContainText("5×5 SSE moves");
+  const params = new URLSearchParams(
+    new URL(await badge.getAttribute("href")).hash.slice(1),
+  );
+  expect(params.get("size")).toBe("5");
+  expect(params.get("dialect")).toBe("Modern");
+  expect(params.get("moves")).toContain("2-4Rw'");
+  expect(
+    await page.locator("#sse").evaluate((p) =>
+      [...p.childNodes]
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent)
+        .join(""),
+    ),
+  ).toBe(sample);
+  const options = await openUI(context, extensionId, "options");
+  for (const [size, input, moves] of [
+    [2, "CR U F", "x U F"],
+    [3, "MR U F", "2R U F"],
+    [4, "MR U F", "2R U F"],
+    [5, sample, params.get("moves")],
+  ]) {
+    await options.locator("#testSize").selectOption(String(size));
+    await options.locator("#notation").fill(input);
+    await options.locator("#test").click();
+    const link = options.locator("#results a");
+    await expect(link).toHaveText(`Open ${size}×${size} SSE moves in CubeLab`);
+    const result = new URLSearchParams(
+      new URL(await link.getAttribute("href")).hash.slice(1),
+    );
+    expect(result.get("size") || "3").toBe(String(size));
+    expect(result.get("moves")).toBe(moves);
+  }
+});
+
 async function tabId(worker, page) {
   await page.bringToFront();
   return worker.evaluate(

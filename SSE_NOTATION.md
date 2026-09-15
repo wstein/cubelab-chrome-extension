@@ -65,3 +65,15 @@ keeps layer semantics independent of those native SSE differences. Validation
 against CubeLab `08c972f` matched 288 individual move states and the complete
 reported sequence where native SSE agrees with the documentation. Remaining
 documented cases have direct layer-diagram regression tests.
+
+## Size selection
+
+The scanner recognizes Pocket Cube, Revenge Cube and Professor Cube headings
+and their Randelshofer directory names. Explicit numeric size hints take
+precedence; conflicting hints remain unresolved. The notation tester offers an
+independent 2×2–5×5 size selector. Use the popup's per-site size override when a
+page does not identify its puzzle.
+
+SSE widgets translate their setup algorithm using the same size and dialect as
+their moves. Invalid SSE setups suppress the link rather than opening a
+different starting state.

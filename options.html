@@ -46,6 +46,19 @@
     <p id="status" role="status"></p>
     <h2>Notation tester</h2>
     <label
+      >Cube size<select id="testSize">
+        <option value="0">Auto (defaults to 3×3)</option>
+        <option value="2">2×2×2</option>
+        <option value="3">3×3×3</option>
+        <option value="4">4×4×4</option>
+        <option value="5">5×5×5</option>
+      </select></label
+    >
+    <p class="muted">
+      Choose the intended size for SSE notation: middle and inner layer moves
+      depend on cube size.
+    </p>
+    <label
       >Paste an algorithm, permutation or URFDLB facelet string<textarea
         id="notation"
         rows="5"

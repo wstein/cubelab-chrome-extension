@@ -62,6 +62,17 @@ async function setup(
 }
 const links = (x) => [...x.doc.querySelectorAll(".cubelab-link")];
 
+test("SSE widgets translate setup in the same size and dialect as their moves", async (t) => {
+  const x = await setup(
+    '<twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="MR2"></twisty-player><twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="W6R"></twisty-player>',
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 1);
+  const params = new URLSearchParams(new URL(links(x)[0].href).hash.slice(1));
+  assert.equal(params.get("alg"), "3R2");
+  assert.equal(params.get("dialect"), "Modern");
+});
+
 test("rescans reuse badges and text nodes; disabling restores extension splits", async (t) => {
   const source = "First: R U F / second: F R U. Done.";
   const x = await setup(`<p>${source}</p><p>R U F</p>`);

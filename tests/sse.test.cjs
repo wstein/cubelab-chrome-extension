@@ -202,3 +202,20 @@ test("unsupported SSE operators do not produce misleading partial links", () => 
     assert.deepEqual(D.detect(text, { size: 5 }), [], text);
   }
 });
+test("named cubes and Randelshofer paths supply size without overriding numeric hints", () => {
+  for (const [name, directory, size] of [
+    ["Pocket Cube", "pocket", 2],
+    ["Cube", "patterns", 3],
+    ["Revenge Cube", "revenge", 4],
+    ["Professor Cube", "professor", 5],
+  ]) {
+    assert.equal(
+      D.inferSize(`https://www.randelshofer.ch/rubik/${directory}/doc/`),
+      size,
+    );
+    if (size !== 3) assert.equal(D.inferSize(name), size);
+  }
+  assert.equal(D.inferSize("Professor Cube 4x4"), 4);
+  assert.equal(D.inferSize("Pocket Cube and Professor Cube"), null);
+  assert.equal(D.inferSize("4x4 and 5x5 Professor Cube"), null);
+});

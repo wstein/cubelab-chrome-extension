@@ -389,7 +389,14 @@
     const found = [
       ...text.matchAll(/\b([2-9])\s*[x×]\s*\1(?:\s*[x×]\s*\1)?\b/gi),
     ].map((m) => Number(m[1]));
-    return found.length && new Set(found).size === 1 ? found[0] : null;
+    if (found.length) return new Set(found).size === 1 ? found[0] : null;
+    const named = [
+      [/\bpocket\s+cube\b|\/rubik\/pocket\//i, 2],
+      [/\/rubik\/patterns\//i, 3],
+      [/\brevenge\s+cube\b|\/rubik\/revenge\//i, 4],
+      [/\bprofessor\s+cube\b|\/rubik\/professor\//i, 5],
+    ].filter(([pattern]) => pattern.test(text));
+    return named.length === 1 ? named[0][1] : null;
   }
   function detect(text, options = {}) {
     if (

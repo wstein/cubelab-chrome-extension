@@ -53,6 +53,7 @@
     const results = D.detect($("notation").value, {
       minMoves: 1,
       cubeContext: true,
+      size: Number($("testSize").value) || undefined,
     });
     $("results").replaceChildren();
     if (!results.length) {
@@ -66,7 +67,7 @@
       a.href = D.makeURL(r, settings);
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.textContent = `Open ${r.kind} in CubeLab`;
+      a.textContent = `Open ${r.size}×${r.size}${r.format === "SSE" ? " SSE" : ""} ${r.kind} in CubeLab`;
       p.append(`${r.notation}\n`, a);
       $("results").append(p);
     }

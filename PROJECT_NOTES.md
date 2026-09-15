@@ -16,6 +16,12 @@ differences found in CubeLab `08c972f`, despite its expanded native SSE support.
 Parser phase verification: formatter, lint, 68 unit/DOM tests, five Chromium
 tests, and detector coverage (100% lines/functions, 97.10% branches) passed.
 
+Integration phase adds named-cube/path size inference, tester size controls,
+and consistent SSE widget setup translation. Verification: formatter, lint,
+70 unit/DOM tests, six Chromium tests, and coverage of 100% lines/functions and
+97.13% branches. The browser regression preserves the complete reported source
+and checks the translated destination across all four supported sizes.
+
 ## Quality checks
 
 Run `npm run format`, `npm run lint`, and `npm test` before each commit.
