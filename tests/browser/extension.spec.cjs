@@ -1,5 +1,47 @@
 const { test, expect } = require("./fixtures.cjs");
 
+test("SiGN widgets and tester translate blocks, setup and boundary layers", async ({
+  page,
+  site,
+  context,
+  extensionId,
+}) => {
+  await page.goto(site);
+  const options = await openUI(context, extensionId, "options");
+  for (const size of [2, 3, 4, 5]) {
+    const source = `${size}r U ${size}R'`;
+    await page.evaluate(
+      ({ size, source }) => {
+        document.body.innerHTML = `<twisty-player puzzle="${size}x${size}x${size}" alg="${source}" experimental-setup-alg="${size}u"></twisty-player>`;
+      },
+      { size, source },
+    );
+    const badge = page.locator(".cubelab-link");
+    await expect(badge).toHaveCount(1);
+    const params = new URLSearchParams(
+      new URL(await badge.getAttribute("href")).hash.slice(1),
+    );
+    expect(params.get("moves")).toBe("x U L");
+    expect(params.get("alg")).toBe("y");
+    expect(Number(params.get("size") || 3)).toBe(size);
+    await options.locator("#testSize").selectOption(String(size));
+    await options.locator("#notation").fill(source);
+    await options.locator("#test").click();
+    await expect(options.locator("#results")).toContainText("x U L");
+  }
+  await page.evaluate(() => {
+    document.body.innerHTML =
+      '<h1>5x5</h1><p>3r U 2-3r′</p><twisty-player puzzle="4x4" alg="3r U F" experimental-setup-alg="5r"></twisty-player>';
+  });
+  await expect(page.locator(".cubelab-link")).toHaveCount(1);
+  const params = new URLSearchParams(
+    new URL(
+      await page.locator(".cubelab-link").getAttribute("href"),
+    ).hash.slice(1),
+  );
+  expect(params.get("moves")).toBe("3Rw U 2-3Rw'");
+});
+
 test("SSE page links and tester preserve the intended cube size", async ({
   page,
   site,

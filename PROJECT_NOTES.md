@@ -8,6 +8,11 @@ turns and rotations. WCA and SSE regressions still pass. Parser verification:
 formatter, lint, 72 unit/DOM tests, and coverage of 100% lines/functions and
 97.29% branches. See [SIGN_NOTATION.md](SIGN_NOTATION.md) for scope.
 
+SiGN integration verifies widget setups, plain-page links and tester inputs
+on all four sizes in Chromium. Setups normalize with their main algorithm's
+size; invalid setups suppress the widget link. Formatter, lint, all 72
+unit/DOM tests, seven browser tests and the unchanged coverage gate passed.
+
 ## WCA notation verification
 
 WCA Article 12a face moves, rotations, and outer-block moves already use the

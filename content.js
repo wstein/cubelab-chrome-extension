@@ -309,7 +309,15 @@
         const parsed = D.parseSse(setup, match.size);
         if (!parsed) return null;
         match.setup = parsed.moves.join(" ");
-      } else match.setup = setup;
+      } else {
+        const parsed = D.classify(setup, {
+          size: match.size,
+          minMoves: 1,
+          lowercaseMode: match.lowercaseMode,
+        });
+        if (parsed?.kind !== "moves") return null;
+        match.setup = parsed.notation;
+      }
     }
     return match;
   }

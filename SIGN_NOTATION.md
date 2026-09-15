@@ -31,3 +31,7 @@ Optional big-cube `M/E/S` and `m/e/s` extensions in the reference are not core
 SiGN support. Existing `M/E/S` behavior remains limited to odd cubes; use
 numbered layers or ranges for portable big-cube algorithms. Non-cube and
 less-common extension operators are outside this scope.
+
+Widget setup algorithms are validated and translated using the same size as
+the main moves. Invalid setup algorithms suppress the link. Original page
+notation and widget attributes remain unchanged.
