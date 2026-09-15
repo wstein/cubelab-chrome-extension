@@ -1,11 +1,65 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>CubeLab Linker settings</title><link rel="stylesheet" href="ui.css"></head><body>
-<h1>CubeLab Linker</h1><p>Open notation found on the web in your cube workbench.</p>
-<h2>Detection</h2><label>Minimum moves for automatic links<select id="minMoves"><option value="3">3 — balanced</option><option value="4">4 — fewer false positives</option><option value="2">2 — more short algorithms</option></select></label>
-<label>Colour state scheme<select id="scheme"><option value="Western">Western (default)</option><option value="Japanese">Japanese</option></select></label><h2>Destinations</h2><p>HTTPS URL templates. <code>{notation}</code> is encoded automatically. An optional <code>{size}</code> placeholder is available for a destination that supports it.</p>
-<label>Moves URL<input id="movesTemplate" type="text"></label><label>State, cycles and unknown notation URL<input id="algTemplate" type="text"></label>
-<p class="muted">The default CubeLab links include inferred cube size and known dialect parameters. Override cube size and lowercase semantics per website in the popup. Facelet strings use URFDLB face order; canonical U / L F R B / D nets are reordered automatically. State detection checks notation structure, not physical solvability.</p>
-<button id="save">Save settings</button><button id="reset">Restore defaults</button><p id="status" role="status"></p>
-<h2>Notation tester</h2><label>Paste an algorithm, permutation or URFDLB facelet string<textarea id="notation" rows="5" spellcheck="false" placeholder="R U R′ U′"></textarea></label>
-<button id="test">Detect notation</button><div id="results" role="status"></div>
-<p class="muted">Processing stays on this device. Only clicking a link sends its notation to the selected destination. No analytics or background page uploads.</p>
-<script src="detector.js"></script><script src="options.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CubeLab Linker settings</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body>
+    <h1>CubeLab Linker</h1>
+    <p>Open notation found on the web in your cube workbench.</p>
+    <h2>Detection</h2>
+    <label
+      >Minimum moves for automatic links<select id="minMoves">
+        <option value="3">3 — balanced</option>
+        <option value="4">4 — fewer false positives</option>
+        <option value="2">2 — more short algorithms</option>
+      </select></label
+    >
+    <label
+      >Colour state scheme<select id="scheme">
+        <option value="Western">Western (default)</option>
+        <option value="Japanese">Japanese</option>
+      </select></label
+    >
+    <h2>Destinations</h2>
+    <p>
+      HTTPS URL templates. <code>{notation}</code> is encoded automatically. An
+      optional <code>{size}</code> placeholder is available for a destination
+      that supports it.
+    </p>
+    <label>Moves URL<input id="movesTemplate" type="text" /></label
+    ><label
+      >State, cycles and unknown notation URL<input
+        id="algTemplate"
+        type="text"
+    /></label>
+    <p class="muted">
+      The default CubeLab links include inferred cube size and known dialect
+      parameters. Override cube size and lowercase semantics per website in the
+      popup. Facelet strings use URFDLB face order; canonical U / L F R B / D
+      nets are reordered automatically. State detection checks notation
+      structure, not physical solvability.
+    </p>
+    <button id="save">Save settings</button
+    ><button id="reset">Restore defaults</button>
+    <p id="status" role="status"></p>
+    <h2>Notation tester</h2>
+    <label
+      >Paste an algorithm, permutation or URFDLB facelet string<textarea
+        id="notation"
+        rows="5"
+        spellcheck="false"
+        placeholder="R U R′ U′"
+      ></textarea>
+    </label>
+    <button id="test">Detect notation</button>
+    <div id="results" role="status"></div>
+    <p class="muted">
+      Processing stays on this device. Only clicking a link sends its notation
+      to the selected destination. No analytics or background page uploads.
+    </p>
+    <script src="detector.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

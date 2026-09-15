@@ -4,11 +4,7 @@
   "version": "0.1.0",
   "description": "Detect cube algorithms, permutation cycles and facelet states and add CubeLab links.",
   "minimum_chrome_version": "109",
-  "permissions": [
-    "storage",
-    "contextMenus",
-    "activeTab"
-  ],
+  "permissions": ["storage", "contextMenus", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },
@@ -23,20 +19,10 @@
   "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "exclude_matches": [
-        "https://wstein.github.io/cubelab/*"
-      ],
-      "js": [
-        "detector.js",
-        "content.js"
-      ],
-      "css": [
-        "content.css"
-      ],
+      "matches": ["http://*/*", "https://*/*"],
+      "exclude_matches": ["https://wstein.github.io/cubelab/*"],
+      "js": ["detector.js", "content.js"],
+      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],

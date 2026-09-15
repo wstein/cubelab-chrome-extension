@@ -22,19 +22,19 @@ Size is inferred from explicit widget puzzle attributes, nearby headings, page t
 
 ## Notation coverage
 
-| Input | Handling |
-|---|---|
-| `R U' F2`, `RUR'U'`, Unicode primes, `Ri`, dash-separated moves | Normalize to spaced modern moves |
-| `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z` | Parse with size constraints; slice moves allowed on 3×3 and 5×5 |
-| `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Expand with a 2,000-move limit |
-| Ruwix `F₂'` or actual HTML `<sub>2</sub>` | Convert to explicit `2Fw'` |
-| SSE `CD2 · MF2 U2 F2 MR2 B2 U2` | Preserve SSE tokens; send `dialect=Sse` |
-| SSE / Singmaster / basic ACube cycles | Preserve cycles and orientation signs; use state input |
-| URFDLB strings, 24/54/96/150 facelets | Check counts, infer size, preserve face order |
-| WOGRBY colour strings and canonical cube nets | Check counts; reorder U / L F R B / D nets to URFDLB fields; configurable Western/Japanese scheme |
-| Complete ACube positional states | Recognize 12 distinct edges + 8 distinct corners |
-| `cp: …; co: …` with optional `ep: …; eo: …` | Check coordinate lengths, ranges and permutation uniqueness |
-| Explicitly labelled `Orbit64: …` | Identify token-width candidates and send to CubeLab for actual validation |
+| Input                                                           | Handling                                                                                          |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `R U' F2`, `RUR'U'`, Unicode primes, `Ri`, dash-separated moves | Normalize to spaced modern moves                                                                  |
+| `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3 and 5×5                                   |
+| `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Expand with a 2,000-move limit                                                                    |
+| Ruwix `F₂'` or actual HTML `<sub>2</sub>`                       | Convert to explicit `2Fw'`                                                                        |
+| SSE `CD2 · MF2 U2 F2 MR2 B2 U2`                                 | Preserve SSE tokens; send `dialect=Sse`                                                           |
+| SSE / Singmaster / basic ACube cycles                           | Preserve cycles and orientation signs; use state input                                            |
+| URFDLB strings, 24/54/96/150 facelets                           | Check counts, infer size, preserve face order                                                     |
+| WOGRBY colour strings and canonical cube nets                   | Check counts; reorder U / L F R B / D nets to URFDLB fields; configurable Western/Japanese scheme |
+| Complete ACube positional states                                | Recognize 12 distinct edges + 8 distinct corners                                                  |
+| `cp: …; co: …` with optional `ep: …; eo: …`                     | Check coordinate lengths, ranges and permutation uniqueness                                       |
+| Explicitly labelled `Orbit64: …`                                | Identify token-width candidates and send to CubeLab for actual validation                         |
 
 State detection does **not** prove physical solvability. Permutation-cycle support in CubeLab is principally for 2×2/3×3; bigger-cube cycles are not generally interchangeable. Marked-centre SSE metadata is preserved, but CubeLab's current compatibility report says it is not rendered as centre orientation.
 
@@ -61,10 +61,12 @@ Limitations: no OCR, PDF viewer, canvas extraction, closed shadow DOM, cross-ori
 
 ## Development and validation
 
-Use Node 22 or newer:
+Use Node 22.22.2+, 24.15.0+, or 26+ (matching the development dependencies):
 
 ```sh
 npm ci
+npm run format
+npm run lint
 npm test
 ```
 
@@ -75,6 +77,10 @@ npm run test:detector
 ```
 
 `jsdom` is a **development-only** dependency. Do not bundle `node_modules` into the extension. No scripts or libraries are loaded remotely at runtime.
+
+Prettier and ESLint are also development-only. Run formatting, linting, and tests
+before committing; `npm run format:check` checks formatting without changing files.
+See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
 34 automated tests passed at delivery: detector/URL tests plus DOM integration tests for inline text, updates, duplicate prevention, exclusions, settings, mixed-size galleries and widget attributes. The downloaded Randelshofer example HTML produced 5 links and the Ruwix patterns HTML produced 64 links. These are DOM checks with simulated visibility, not browser screenshots or proof that every resulting state was accepted by the live CubeLab deployment.
 

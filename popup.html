@@ -1,8 +1,38 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>CubeLab Linker</title><link rel="stylesheet" href="ui.css"></head>
-<body class="popup"><h1>CubeLab Linker</h1><p id="status" role="status">Reading page…</p>
-<label><input id="enabled" type="checkbox"> Detect notation automatically</label>
-<label><input id="site" type="checkbox"> Enable on this website</label>
-<label>Cube size on this website<select id="size"><option value="">Auto</option><option value="2">2×2</option><option value="3">3×3</option><option value="4">4×4</option><option value="5">5×5</option></select></label><label>Lowercase r, u, f…<select id="lowercaseMode"><option value="Wide">Modern wide turns</option><option value="InnerSlice">Legacy inner slices (4×4 / 5×5)</option></select></label>
-<button id="scan">Scan again</button><button id="options">Settings &amp; notation tester</button>
-<p class="muted">Select unusual notation and right-click → Open selection in CubeLab.</p>
-<script src="detector.js"></script><script src="popup.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CubeLab Linker</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup">
+    <h1>CubeLab Linker</h1>
+    <p id="status" role="status">Reading page…</p>
+    <label
+      ><input id="enabled" type="checkbox" /> Detect notation
+      automatically</label
+    >
+    <label><input id="site" type="checkbox" /> Enable on this website</label>
+    <label
+      >Cube size on this website<select id="size">
+        <option value="">Auto</option>
+        <option value="2">2×2</option>
+        <option value="3">3×3</option>
+        <option value="4">4×4</option>
+        <option value="5">5×5</option>
+      </select></label
+    ><label
+      >Lowercase r, u, f…<select id="lowercaseMode">
+        <option value="Wide">Modern wide turns</option>
+        <option value="InnerSlice">Legacy inner slices (4×4 / 5×5)</option>
+      </select></label
+    >
+    <button id="scan">Scan again</button
+    ><button id="options">Settings &amp; notation tester</button>
+    <p class="muted">
+      Select unusual notation and right-click → Open selection in CubeLab.
+    </p>
+    <script src="detector.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

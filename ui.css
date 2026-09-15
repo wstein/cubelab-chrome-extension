@@ -1,2 +1,92 @@
-:root{color-scheme:light dark;font:15px/1.6 system-ui,sans-serif;color:#183c39;background:#f5f8f7}
-body{max-width:760px;margin:36px auto;padding:0 24px}.popup{width:300px;margin:16px;padding:0 12px}h1{font-size:24px;letter-spacing:-.7px}h2{font-size:18px;margin-top:28px}label{display:block;margin:14px 0}input[type=text],input[type=url],textarea,select{box-sizing:border-box;width:100%;padding:10px;border:1px solid #99b5b1;border-radius:6px;background:white;color:#183c39;font:inherit}textarea{font-family:ui-monospace,monospace}button{background:#1a6258;color:white;border:0;border-radius:6px;padding:10px 16px;margin:6px 8px 6px 0;cursor:pointer}.muted,small{color:#526f69}a{color:#13665b}code{font-size:13px}#results{white-space:pre-wrap;overflow-wrap:anywhere}input[type=checkbox]{accent-color:#1a6258}@media(prefers-color-scheme:dark){:root{background:#122723;color:#e0efeb}.muted,small{color:#a6c8bd}input[type=text],input[type=url],textarea,select{background:#203c35;color:#e0efeb}a{color:#8ed4c3}}
+:root {
+  color-scheme: light dark;
+  font:
+    15px/1.6 system-ui,
+    sans-serif;
+  color: #183c39;
+  background: #f5f8f7;
+}
+body {
+  max-width: 760px;
+  margin: 36px auto;
+  padding: 0 24px;
+}
+.popup {
+  width: 300px;
+  margin: 16px;
+  padding: 0 12px;
+}
+h1 {
+  font-size: 24px;
+  letter-spacing: -0.7px;
+}
+h2 {
+  font-size: 18px;
+  margin-top: 28px;
+}
+label {
+  display: block;
+  margin: 14px 0;
+}
+input[type="text"],
+input[type="url"],
+textarea,
+select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #99b5b1;
+  border-radius: 6px;
+  background: white;
+  color: #183c39;
+  font: inherit;
+}
+textarea {
+  font-family: ui-monospace, monospace;
+}
+button {
+  background: #1a6258;
+  color: white;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 6px 8px 6px 0;
+  cursor: pointer;
+}
+.muted,
+small {
+  color: #526f69;
+}
+a {
+  color: #13665b;
+}
+code {
+  font-size: 13px;
+}
+#results {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+input[type="checkbox"] {
+  accent-color: #1a6258;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    background: #122723;
+    color: #e0efeb;
+  }
+  .muted,
+  small {
+    color: #a6c8bd;
+  }
+  input[type="text"],
+  input[type="url"],
+  textarea,
+  select {
+    background: #203c35;
+    color: #e0efeb;
+  }
+  a {
+    color: #8ed4c3;
+  }
+}
