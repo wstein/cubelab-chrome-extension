@@ -313,3 +313,29 @@ test("custom HTTPS destinations escape notation and receive no CubeLab parameter
     "https://wstein.github.io/other/#moves=R+U+F",
   );
 });
+test("WCA face, outer-block and rotation notation works across 2x2 through 5x5", () => {
+  for (const size of [2, 3, 4, 5]) {
+    const tokens = [];
+    for (const suffix of ["", "'", "2"]) {
+      for (const face of "URFDLB") {
+        tokens.push(face + suffix);
+        for (let width = 2; width < size; width++) {
+          tokens.push(`${width}${face}w${suffix}`);
+          if (width === 2) tokens.push(`${face}w${suffix}`);
+        }
+      }
+      for (const axis of "xyz") tokens.push(axis + suffix);
+    }
+    const notation = tokens.join(" ");
+    const results = D.detect(notation, { size, cubeContext: true });
+    assert.equal(results.length, 1);
+    assert.equal(results[0].notation, notation);
+    assert.equal(results[0].size, size);
+    assert.notEqual(results[0].format, "SSE");
+    const params = new URLSearchParams(
+      new URL(D.makeURL(results[0])).hash.slice(1),
+    );
+    assert.equal(params.get("moves"), notation);
+    assert.equal(Number(params.get("size") || 3), size);
+  }
+});

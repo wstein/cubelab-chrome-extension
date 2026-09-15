@@ -1,5 +1,15 @@
 # Project notes
 
+## WCA notation verification
+
+WCA Article 12a face moves, rotations, and outer-block moves already use the
+modern parser. A full face/axis/suffix matrix now verifies all four sizes and
+every WCA-valid block width (2 through N−1), including implicit two-layer `Rw`
+aliases and destination URL round trips. This is notation support, not a
+competition-legality validator; existing modern extensions remain available.
+Reference: https://www.worldcubeassociation.org/regulations/#12a.
+The suite now contains 71 unit/DOM tests and six Chromium tests.
+
 ## SSE 2×2–5×5 implementation
 
 The detector recognizes all seven SSE prefix families (`C T N V M W S`) and
