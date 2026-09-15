@@ -129,7 +129,7 @@ updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 97.56%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
-Seven Chromium tests cover SiGN/SSE size selection and translation, installation, real inline visibility, responsive CSS,
+Eight Chromium tests cover numbered SSE Setup links, SiGN/SSE size selection and translation, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
 popup/options persistence, site disabling, widget sizes/setup, context-menu
 registration, and badge navigation. The destination is intercepted to verify

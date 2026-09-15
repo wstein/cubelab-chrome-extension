@@ -80,7 +80,9 @@
         ? `${match.size}×${match.size}${match.format === "SSE" ? " SSE" : ""} moves`
         : match.kind === "state"
           ? `${match.size}×${match.size} state`
-          : "cycles";
+          : match.format === "SSE"
+            ? `${match.size}×${match.size} SSE cycles`
+            : "cycles";
     link.textContent = `↗ CubeLab · ${label}`;
     link.title = `Open ${(match.source || match.notation).slice(0, 300)} in CubeLab`;
     link.setAttribute("aria-label", link.title);

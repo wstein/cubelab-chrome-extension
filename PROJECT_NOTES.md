@@ -10,6 +10,11 @@ lint, 74 unit/DOM tests and 100% line/function, 97.56% branch coverage passed.
 The upstream `07911e6` importer still corrupts colours when applying cycles
 in place; the minimal reproduction is recorded in [SSE_NOTATION.md](SSE_NOTATION.md).
 
+Browser phase adds size-labelled SSE cycle badges and verifies that the entire
+multiline example remains unchanged in the page, badge navigation and tester
+output. Eight Chromium tests pass. Destination navigation is intercepted;
+this verifies the extension URL contract, not upstream rendering correctness.
+
 ## SiGN core parser
 
 Numbered lowercase blocks and ranges normalize to modern wide moves. Known

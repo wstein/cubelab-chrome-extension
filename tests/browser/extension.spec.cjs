@@ -1,4 +1,53 @@
 const { test, expect } = require("./fixtures.cjs");
+const numberedSse = require("../fixtures/numbered-sse.cjs");
+
+test("numbered SSE cycles navigate intact to size-aware Setup", async ({
+  page,
+  site,
+  context,
+  extensionId,
+}) => {
+  await page.goto(site);
+  await page.evaluate((source) => {
+    document.body.innerHTML = '<h1>Professor Cube</h1><pre id="cycles"></pre>';
+    document.querySelector("#cycles").textContent = source;
+  }, numberedSse);
+  const badge = page.locator("#cycles .cubelab-link");
+  await expect(badge).toHaveCount(1);
+  await expect(badge).toHaveText("↗ CubeLab · 5×5 SSE cycles");
+  expect(
+    await page.locator("#cycles").evaluate((element) =>
+      [...element.childNodes]
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent)
+        .join(""),
+    ),
+  ).toBe(numberedSse);
+  await context.route("https://wstein.github.io/cubelab/**", (route) =>
+    route.fulfill({ body: "Setup destination intercepted." }),
+  );
+  const opened = context.waitForEvent("page");
+  await badge.click();
+  const destination = await opened;
+  await destination.waitForURL("https://wstein.github.io/cubelab/#**");
+  const params = new URLSearchParams(new URL(destination.url()).hash.slice(1));
+  expect(params.get("alg")).toBe(numberedSse);
+  expect(params.get("size")).toBe("5");
+  expect(params.has("moves")).toBe(false);
+  const options = await openUI(context, extensionId, "options");
+  await options.locator("#notation").fill(numberedSse);
+  await options.locator("#test").click();
+  await expect(options.locator("#results a")).toHaveText(
+    "Open 5×5 SSE permutation in CubeLab",
+  );
+  expect(
+    new URLSearchParams(
+      new URL(
+        await options.locator("#results a").getAttribute("href"),
+      ).hash.slice(1),
+    ).get("alg"),
+  ).toBe(numberedSse);
+});
 
 test("SiGN widgets and tester translate blocks, setup and boundary layers", async ({
   page,
