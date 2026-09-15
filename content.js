@@ -77,12 +77,10 @@
     link.rel = "noopener noreferrer";
     const label =
       match.kind === "moves"
-        ? `${match.size}×${match.size} moves`
+        ? `${match.size}×${match.size}${match.format === "SSE" ? " SSE" : ""} moves`
         : match.kind === "state"
           ? `${match.size}×${match.size} state`
-          : match.kind === "legacy"
-            ? "SSE moves"
-            : "cycles";
+          : "cycles";
     link.textContent = `↗ CubeLab · ${label}`;
     link.title = `Open ${(match.source || match.notation).slice(0, 300)} in CubeLab`;
     link.setAttribute("aria-label", link.title);

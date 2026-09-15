@@ -33,7 +33,7 @@ cube sizes.
 | `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3 and 5×5                                   |
 | `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Expand with a 2,000-move limit                                                                    |
 | Ruwix `F₂'` or actual HTML `<sub>2</sub>`                       | Convert to explicit `2Fw'`                                                                        |
-| SSE `CD2 · MF2 U2 F2 MR2 B2 U2`                                 | Preserve SSE tokens; send `dialect=Sse`                                                           |
+| SSE 2×2–5×5, including `WR`, `T3B`, `N2-3R`, and `S2-3R`        | Convert size-specific layers to explicit modern moves; send `dialect=Modern`                      |
 | SSE / Singmaster / basic ACube cycles                           | Preserve cycles and orientation signs; use state input                                            |
 | URFDLB strings, 24/54/96/150 facelets                           | Check counts, infer size, preserve face order                                                     |
 | WOGRBY colour strings and canonical cube nets                   | Check counts; reorder U / L F R B / D nets to URFDLB fields; configurable Western/Japanese scheme |
@@ -50,6 +50,9 @@ repeat or inverse suffix, an ambiguous group such as `(RU RF)` is interpreted as
 a permutation cycle. Invalid repeat counts are rejected, not silently removed.
 
 ## Integration contract
+
+See [SSE_NOTATION.md](SSE_NOTATION.md) for the Randelshofer move-family mappings,
+size rules, supported operators, and validation against CubeLab's SSE updates.
 
 Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 2026-09-15:
 
@@ -117,10 +120,10 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 56 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 68 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 95.62%. This gate covers
+least 93% of branches; the measured branch coverage is 97.10%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
 Five Chromium tests cover installation, real inline visibility, responsive CSS,

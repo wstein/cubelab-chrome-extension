@@ -21,17 +21,83 @@
       .replace(/\u00a0/g, " ");
   const moveRE =
     /^(?:[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[URFDLBMESxyzurfdlb])(?:2'?|'2|3|'|i)?/;
-  function parseMoves(source) {
-    if (!source || source.length > 8000) return null;
-    const s = normalize(source)
-      .replace(
-        /([URFDLB])([₂₃₄₅])/g,
-        (_, f, n) => "₂₃₄₅".indexOf(n) + 2 + f + "w",
-      )
-      .replace(
-        /(?<=[URFDLBMESxyzurfdlbw'i])-(?=[2-5URFDLBMESxyzurfdlb([])/g,
-        " ",
-      );
+  const sseMoveRE =
+    /^(?:[CTNVMWS](?:[1-5](?:-[1-5])?)?)?[URFDLB](?:2['-]?|['-]2|3|['-])?/;
+  const sseMarker = /[CTNVMWS](?:\d+(?:-\d+)?)?[URFDLB]/;
+  const opposite = { R: "L", L: "R", U: "D", D: "U", F: "B", B: "F" };
+
+  function sseMove(token, size) {
+    const [, family = "", first, last, face, suffix = ""] = token.match(
+      /^(?:([CTNVMWS])([1-5])?(?:-([1-5]))?)?([URFDLB])(.*)$/,
+    );
+    const turns = suffix.includes("2") ? 2 : /['-]|3/.test(suffix) ? -1 : 1;
+    const ending = (turns) =>
+      turns === 2 || turns === -2 ? "2" : turns === -1 ? "'" : "";
+    function range(from, to, direction = turns, side = face) {
+      if (from < 1 || to > size || from > to) throw Error("SSE layer range");
+      if (from === 1 && to === size) {
+        const axis = { R: "x", L: "x", U: "y", D: "y", F: "z", B: "z" }[side];
+        return axis + ending(/[LDB]/.test(side) ? -direction : direction);
+      }
+      if (to === size)
+        return range(1, size - from + 1, -direction, opposite[side]);
+      const base =
+        from === 1
+          ? to === 1
+            ? side
+            : `${to}${side}w`
+          : from === to
+            ? `${from}${side}`
+            : `${from}-${to}${side}w`;
+      return base + ending(direction);
+    }
+    const depth = Number(
+      first || (family === "T" || family === "N" || family === "V" ? 2 : 1),
+    );
+    if (last && family !== "N" && family !== "S")
+      throw Error("SSE range prefix");
+    if (family === "C" || family === "W") {
+      if (first) throw Error("SSE unnumbered prefix");
+      return [family === "C" ? range(1, size) : range(2, size - 1)];
+    }
+    if (family === "T") {
+      if (depth >= size) throw Error("SSE tier depth");
+      return [range(1, depth)];
+    }
+    if (family === "N") return [range(depth, Number(last || depth))];
+    if (family === "V" || family === "M") {
+      if (depth > size - 2) throw Error("SSE inner depth");
+      // If centering is ambiguous, SSE chooses the block nearer the named face.
+      const from = family === "V" ? 2 : Math.floor((size - depth) / 2) + 1;
+      return [range(from, from + depth - 1)];
+    }
+    if (family === "S") {
+      const from = last ? depth : depth + 1,
+        to = last ? Number(last) : size - depth;
+      if (from < 1 || from > to || to > size || (from === 1 && to === size))
+        throw Error("SSE slice range");
+      // S ranges rotate the complement, not the layers named by the range.
+      return [
+        ...(from > 1 ? [range(1, from - 1)] : []),
+        ...(to < size ? [range(to + 1, size)] : []),
+      ];
+    }
+    return [range(1, 1)];
+  }
+  function parseExpression(source, sseSize = null) {
+    if (typeof source !== "string" || !source || source.length > 8000)
+      return null;
+    const s = sseSize
+      ? normalize(source).replace(/[.↗]/g, " ")
+      : normalize(source)
+          .replace(
+            /([URFDLB])([₂₃₄₅])/g,
+            (_, f, n) => "₂₃₄₅".indexOf(n) + 2 + f + "w",
+          )
+          .replace(
+            /(?<=[URFDLBMESxyzurfdlbw'i])-(?=[2-5URFDLBMESxyzurfdlb([])/g,
+            " ",
+          );
     let pos = 0,
       depth = 0,
       minSize = 2;
@@ -68,34 +134,40 @@
           }
           if (s[pos++] !== (open === "(" ? ")" : "]") || !part.length)
             throw Error("close");
-          const suffix = s.slice(pos).match(/^(\d{1,3})?(')?/)[0];
+          const suffix = s
+            .slice(pos)
+            .match(sseSize ? /^(\d{1,3})?(['-])?/ : /^(\d{1,3})?(')?/)[0];
           pos += suffix.length;
-          const count = Number(suffix.replace("'", "") || 1);
+          const count = Number(suffix.replace(/['-]/, "") || 1);
           if (count < 1 || count > 100) throw Error("repeat");
-          if (suffix.endsWith("'")) part = inv(part);
+          if (/['-]$/.test(suffix)) part = inv(part);
           if (part.length * count > MAX) throw Error("size");
           part = Array.from({ length: count }, () => part).flat();
         } else {
-          const m = s.slice(pos).match(moveRE);
+          const m = s.slice(pos).match(sseSize ? sseMoveRE : moveRE);
           if (!m) throw Error("token");
           pos += m[0].length;
-          let move = m[0]
-            .replace(/i$/, "'")
-            .replace(/(?:2'|'2)$/, "2")
-            .replace(/3$/, "'");
-          const base = move.replace(/[2']$/, "");
-          if (/[MES]/.test(base)) minSize = Math.max(minSize, 3);
-          if (/^[2-5]-[2-5]/.test(base)) {
-            if (Number(base[0]) > Number(base[2])) throw Error("layer range");
-            minSize = Math.max(minSize, Number(base[2]) + 1);
-          } else if (/^[urfdlb]$/.test(base) || /w$/.test(base)) {
-            minSize = Math.max(
-              minSize,
-              Number(base.match(/^[2-5]/)?.[0] || 2) + 1,
-            );
-          } else if (/^[2-5]/.test(base))
-            minSize = Math.max(minSize, Number(base[0]) + 1);
-          part = [move];
+          if (sseSize) {
+            part = sseMove(m[0], sseSize);
+          } else {
+            let move = m[0]
+              .replace(/i$/, "'")
+              .replace(/(?:2'|'2)$/, "2")
+              .replace(/3$/, "'");
+            const base = move.replace(/[2']$/, "");
+            if (/[MES]/.test(base)) minSize = Math.max(minSize, 3);
+            if (/^[2-5]-[2-5]/.test(base)) {
+              if (Number(base[0]) > Number(base[2])) throw Error("layer range");
+              minSize = Math.max(minSize, Number(base[2]) + 1);
+            } else if (/^[urfdlb]$/.test(base) || /w$/.test(base)) {
+              minSize = Math.max(
+                minSize,
+                Number(base.match(/^[2-5]/)?.[0] || 2) + 1,
+              );
+            } else if (/^[2-5]/.test(base))
+              minSize = Math.max(minSize, Number(base[0]) + 1);
+            part = [move];
+          }
         }
         out.push(...part);
         if (out.length > MAX) throw Error("size");
@@ -112,6 +184,15 @@
     } catch {
       return null;
     }
+  }
+  function parseMoves(source) {
+    return parseExpression(source);
+  }
+  function parseSse(source, size) {
+    const parsed = [2, 3, 4, 5].includes(size)
+      ? parseExpression(source, size)
+      : null;
+    return parsed ? { moves: parsed.moves, size } : null;
   }
   function facelets(source) {
     const compact = source.replace(/\s/g, "");
@@ -268,20 +349,22 @@
     const perm = permutation(s);
     if (perm)
       return options.size > 3 ? null : { ...perm, size: options.size || 3 };
-    // Preserve legacy CubeTwister syntax rather than guess its semantics.
-    if (
-      /[CMST][URFDLB]/.test(s) &&
-      /^(?:\s*(?:[CMST]?[URFDLB])(?:2|'|3)?\s*)+$/.test(s)
-    )
-      return options.size && options.size !== 3
-        ? null
-        : {
-            kind: "legacy",
-            notation: s,
-            size: 3,
-            dialect: "Sse",
+    if (sseMarker.test(s) || options.dialect === "Sse") {
+      for (const size of options.size ? [options.size] : [3, 4, 5]) {
+        const parsed = parseSse(s, size);
+        if (parsed && parsed.moves.length >= (options.minMoves ?? 3))
+          return {
+            kind: "moves",
+            format: "SSE",
+            notation: parsed.moves.join(" "),
+            size,
+            dialect: "Modern",
+            lowercaseMode: "Wide",
             confidence: "high",
           };
+      }
+      return null;
+    }
     const parsed = parseMoves(s);
     if (
       parsed &&
@@ -316,6 +399,7 @@
     )
       return [];
     const found = [];
+    const rejectedSse = [];
     // Structured states take precedence over move-like cubie labels.
     const structured = facelets(text) || cubieState(text) || coordinates(text);
     if (structured)
@@ -334,7 +418,11 @@
         (!options.cubeContext || text.slice(start, end).length < 6)
       )
         return;
-      if (!result || found.some((x) => start < x.end && end > x.start)) return;
+      if (
+        !result ||
+        [...found, ...rejectedSse].some((x) => start < x.end && end > x.start)
+      )
+        return;
       if (options.size && result.minSize > options.size) return;
       found.push({ ...result, start, end, source: text.slice(start, end) });
     }
@@ -366,13 +454,16 @@
     if (whole) add(text.indexOf(trim), text.indexOf(trim) + trim.length, whole);
     // Candidate runs bounded by prose; unmatched syntax is rejected, not repaired.
     const run =
-      /(?<![A-Za-z0-9])(?:[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CMST][URFDLB]|[URFDLBMESxyzurfdlb]|[([])(?:[URFDLBMESxyzurfdlbCMSTwi₂₃₄₅2-5\-'’‘′´`²\s·•()[\],:0-9]*)(?![A-Za-z0-9])/g;
+      /(?<![A-Za-z0-9])(?:[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
       // Metric suffixes in Pretty Patterns are deliberately outside the notation.
       raw = raw.replace(/\s+\(\d+\s*$/, "").trimEnd();
+      raw = raw.replace(/\.+$/, "").trimEnd();
       if (!raw || /[A-Za-z]/.test(text[m.index + raw.length] || "")) continue;
       const r = classify(raw, options);
+      if (!r && sseMarker.test(raw))
+        rejectedSse.push({ start: m.index, end: m.index + raw.length });
       if (r && (options.cubeContext || /[URFDLBMES]/.test(raw)))
         add(m.index, m.index + raw.length, r);
     }
@@ -392,9 +483,8 @@
     return found.sort((a, b) => a.start - b.start);
   }
   function makeURL(result, settings = DEFAULTS) {
-    const template = ["moves", "legacy"].includes(result.kind)
-      ? settings.movesTemplate
-      : settings.algTemplate;
+    const template =
+      result.kind === "moves" ? settings.movesTemplate : settings.algTemplate;
     const encoded = new URLSearchParams({ n: result.notation })
       .toString()
       .slice(2);
@@ -427,6 +517,7 @@
     DEFAULTS,
     normalize,
     parseMoves,
+    parseSse,
     facelets,
     cubieState,
     coordinates,

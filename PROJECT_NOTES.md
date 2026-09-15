@@ -1,5 +1,21 @@
 # Project notes
 
+## SSE 2×2–5×5 implementation
+
+The detector recognizes all seven SSE prefix families (`C T N V M W S`) and
+their numbered forms. It validates their selected layers, expands supported
+groups with the existing bounds, and emits explicit modern moves. Candidate
+scanning retains `W`, numbered prefixes, dots, and copied badge arrows in the
+same algorithm span. Invalid SSE and unsupported operators cannot fall back to
+a misleading partial permutation link.
+
+The size-specific mappings and upstream contract are documented in
+[SSE_NOTATION.md](SSE_NOTATION.md). This includes the remaining semantic
+differences found in CubeLab `08c972f`, despite its expanded native SSE support.
+
+Parser phase verification: formatter, lint, 68 unit/DOM tests, five Chromium
+tests, and detector coverage (100% lines/functions, 97.10% branches) passed.
+
 ## Quality checks
 
 Run `npm run format`, `npm run lint`, and `npm test` before each commit.

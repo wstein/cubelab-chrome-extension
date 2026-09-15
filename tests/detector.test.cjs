@@ -59,11 +59,13 @@ test("Randelshofer grouping dots and metrics", () => {
   assert.equal(r.notation, "U2 F2 B2 U2 F2 R2 L2 F2");
   assert.equal(r.source, "U2 · F2 B2 · U2 F2 · R2 L2 · F2");
 });
-test("legacy move syntax selects the verified SSE dialect", () => {
+test("SSE move syntax is translated for the modern destination dialect", () => {
   const [r] = detect("CD2 · MF2 U2 F2 MR2 B2 U2");
-  assert.equal(r.kind, "legacy");
+  assert.equal(r.kind, "moves");
+  assert.equal(r.format, "SSE");
+  assert.equal(r.notation, "y2 2F2 U2 F2 2R2 B2 U2");
   assert.ok(D.makeURL(r).includes("/workbench#moves="));
-  assert.ok(D.makeURL(r).includes("dialect=Sse"));
+  assert.ok(D.makeURL(r).includes("dialect=Modern"));
 });
 test("wide, slice, rotation, inner-layer and 5x5 notation", () => {
   for (const s of [
@@ -274,7 +276,7 @@ test("input and expansion limits reject excess without rejecting the boundary", 
   assert.deepEqual(D.detect(null), []);
   assert.deepEqual(D.detect("R U F", { size: 6 }), []);
   assert.deepEqual(D.detect("(ur,dr)", { size: 4 }), []);
-  assert.equal(D.classify("CD2 U F", { size: 4 }), null);
+  assert.equal(D.classify("CD2 U F", { size: 6 }), null);
   assert.equal(D.inferSize("ordinary page"), null);
 });
 
