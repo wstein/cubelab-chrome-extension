@@ -1,6 +1,26 @@
 # Site compatibility checklist
 
-Verified 2026-09-15. “Generic” means supported notation in visible document text is eligible; it is **not** a claim that the site's live application was tested. No login, posting, or account access is required.
+The site observations below were recorded during the original review on
+2026-09-15. They have not been rerun as part of the subsequent fixes. “Generic”
+means supported notation in visible document text is eligible; it is **not** a
+claim that the site's live application was tested. No login, posting, or account
+access is required.
+
+## Automated browser validation
+
+The extension is now tested in Playwright's Chromium with its actual manifest,
+service worker, storage, content scripts, popup, and options page. Five tests use
+local fixtures for CSS visibility, responsive layout, DOM updates, stable badge
+nodes, toolbar permission granting, concurrent settings, 4×4/5×5 widgets,
+context-menu registration, and destination URLs. Worker tests cover selection
+handling; the native right-click menu itself is not automated. Destination
+navigation is intercepted, so live CubeLab parsing/rendering is not asserted.
+
+Run `npx playwright install chromium` followed by `npm run test:browser`.
+These tests replace the original lack of browser validation for core extension
+behavior, but do not upgrade any live-site claim in the table below.
+
+## Historical site observations
 
 | Site                                                                                 | Implementation / evidence                                                                                      | Remaining limitation                                                                                                                            |
 | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |

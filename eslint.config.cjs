@@ -5,6 +5,13 @@ module.exports = [
   { ignores: ["node_modules/**", "test-results/**", "playwright-report/**"] },
   js.configs.recommended,
   {
+    files: ["tests/browser/fixtures.cjs"],
+    // Playwright discovers fixture dependencies from destructured parameters.
+    rules: {
+      "no-empty-pattern": ["error", { allowObjectPatternsAsParameters: true }],
+    },
+  },
+  {
     files: ["**/*.{js,cjs}"],
     languageOptions: {
       globals: {

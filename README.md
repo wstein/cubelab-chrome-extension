@@ -4,13 +4,13 @@ Adds small **↗ CubeLab** links next to cube notation on ordinary web pages. Su
 
 ## Install
 
-1. Extract this ZIP to a permanent folder.
+1. Keep the repository checkout, or extract the extension archive, in a permanent folder.
 2. Open `chrome://extensions` in Chrome.
 3. Enable **Developer mode**.
-4. Click **Load unpacked** and select the `cubelab-linker` folder containing `manifest.json`.
+4. Click **Load unpacked** and select the folder containing `manifest.json`.
 5. Reload any cube pages that were already open. Pin the extension if desired.
 
-This is an unpacked extension, not a Chrome Web Store listing. Chrome may show its normal developer-extension notice. Keep the extracted directory; Chrome loads the extension from it.
+This is an unpacked extension, not a Chrome Web Store listing. Chrome may show its normal developer-extension notice. Keep the directory; Chrome loads the extension from it.
 
 ## Use
 
@@ -68,8 +68,6 @@ The generic detector scans visible top-level document text, including inline mar
 
 Limitations: no OCR, PDF viewer, canvas extraction, closed shadow DOM, cross-origin frames, video-only tutorials, or automatic reading of user input fields. Recognition is deliberately incomplete: NISS, arbitrary solver constraints, camera/parallel Roofpig syntax, named macros, custom colour alphabets, and some notation dialects need the selection fallback. A page need not contain detectable algorithms just because it is a cubing site. Long blocks (over 32,000 characters), scans beyond 100,000 nodes, and links beyond 500 per page are capped. Group expansion is bounded to avoid pathological input.
 
-## Development and validation
-
 Text and child-node updates rescan the affected block or subtree. Unchanged
 blocks and widgets keep their existing badges. Heading, attribute, stylesheet,
 viewport, and settings changes trigger a broader check because they can change
@@ -80,6 +78,8 @@ excluded and separates surrounding notation.
 Use **Scan again** after changes made only through stylesheet CSSOM methods or
 CSS animations; these changes do not necessarily produce observable DOM events.
 
+## Development and validation
+
 Use Node 22.22.2+, 24.15.0+, or 26+ (matching the development dependencies):
 
 ```sh
@@ -87,6 +87,7 @@ npm ci
 npm run format
 npm run lint
 npm test
+npm run test:coverage
 ```
 
 Pure detector tests can also run without installing dependencies:
@@ -95,21 +96,48 @@ Pure detector tests can also run without installing dependencies:
 npm run test:detector
 ```
 
-`jsdom` is a **development-only** dependency. Do not bundle `node_modules` into the extension. No scripts or libraries are loaded remotely at runtime.
+Run the browser suite after installing Playwright's matching Chromium build:
+
+```sh
+npx playwright install chromium
+npm run test:browser
+```
+
+On Linux CI hosts, `npx playwright install --with-deps chromium` also installs
+the required system libraries. Browser tests use a temporary profile and a local
+HTTP fixture server. They do not use your personal browser profile or depend on
+live cubing websites. Failed tests retain screenshots and traces in the ignored
+`test-results/` directory.
+
+All npm dependencies are **development-only**. Do not bundle `node_modules`,
+browser caches, or test artifacts into the extension. No scripts or libraries
+are loaded remotely at runtime.
 
 Prettier and ESLint are also development-only. Run formatting, linting, and tests
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The automated suite covers detector/URL behavior, concurrent settings updates,
-and DOM integration for inline text, updates, duplicate prevention, exclusions,
-mixed-size galleries and widget attributes. The original downloaded Randelshofer
-example HTML produced 5 links and the Ruwix patterns HTML produced 64 links.
-These are DOM checks with simulated visibility, not browser screenshots or proof
-that every resulting state was accepted by the live CubeLab deployment.
+The unit/DOM suite has 56 tests covering detection, URL construction, concurrent
+settings updates, worker messages, selection handling, and incremental DOM
+updates. The detector coverage gate requires 100% of lines and functions and at
+least 93% of branches; the measured branch coverage is 95.62%. This gate covers
+`detector.js`, not code evaluated in simulated browser contexts.
 
-A Chrome binary was unavailable and its download timed out. Therefore installation, actual Chrome extension APIs, live hydration, site CSS interactions, and end-to-end CubeLab rendering still need a real-browser smoke check. Open the popup and settings after loading, then check both example sites, a 4×4/5×5 algorithm, a dynamic page, site disabling and the selection context menu.
+Five Chromium tests cover installation, real inline visibility, responsive CSS,
+manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
+popup/options persistence, site disabling, widget sizes/setup, context-menu
+registration, and badge navigation. The destination is intercepted to verify
+the URL without relying on the live CubeLab deployment.
+
+Native right-click menu interaction and live CubeLab rendering remain release
+smoke checks. The selection callback is covered by worker tests. Historical site
+observations and their limits are recorded in [COMPATIBILITY.md](COMPATIBILITY.md);
+local fixtures do not establish compatibility with every live site.
 
 ## Privacy
 
-All scanning and detection runs locally. The extension does not upload pages or contact a server in the background. Clicking a badge or context-menu action opens the destination with the notation in its URL fragment. The destination's JavaScript can read that fragment; its own privacy policy applies. See [PRIVACY.md](PRIVACY.md).
+All scanning and detection runs locally. The extension does not upload pages or
+contact a server in the background. Default links carry notation in the URL
+fragment; the destination's JavaScript can read it. Custom templates may put
+notation in a query or path, which is sent to the destination server. The
+destination's privacy policy applies. See [PRIVACY.md](PRIVACY.md).

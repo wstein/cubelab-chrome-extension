@@ -263,3 +263,51 @@ test("unsuffixed cycles retain precedence and orientation metadata in prose", ()
     assert.equal(results[0].source, expression);
   }
 });
+
+test("input and expansion limits reject excess without rejecting the boundary", () => {
+  assert.equal(D.parseMoves("R ".repeat(2000)).moves.length, 2000);
+  assert.equal(D.parseMoves("R ".repeat(2001)), null);
+  assert.equal(D.parseMoves(" ".repeat(8001)), null);
+  assert.equal(D.parseMoves(""), null);
+  assert.equal(D.classify(" ".repeat(8001)), null);
+  assert.deepEqual(D.detect(" ".repeat(32001)), []);
+  assert.deepEqual(D.detect(null), []);
+  assert.deepEqual(D.detect("R U F", { size: 6 }), []);
+  assert.deepEqual(D.detect("(ur,dr)", { size: 4 }), []);
+  assert.equal(D.classify("CD2 U F", { size: 4 }), null);
+  assert.equal(D.inferSize("ordinary page"), null);
+});
+
+test("custom HTTPS destinations escape notation and receive no CubeLab parameters", () => {
+  const settings = {
+    ...D.DEFAULTS,
+    scheme: "Japanese",
+    movesTemplate: "https://example.com/view?moves={notation}&size={size}",
+  };
+  const url = new URL(
+    D.makeURL(
+      {
+        kind: "moves",
+        notation: "R &x=1#",
+        size: 4,
+        setup: "F U",
+        dialect: "Sse",
+        lowercaseMode: "InnerSlice",
+      },
+      settings,
+    ),
+  );
+  assert.equal(url.searchParams.get("moves"), "R &x=1#");
+  assert.equal(url.searchParams.get("size"), "4");
+  assert.equal(url.hash, "");
+  assert.equal(
+    D.makeURL(
+      { kind: "moves", notation: "R U F", size: 4 },
+      {
+        ...D.DEFAULTS,
+        movesTemplate: "https://wstein.github.io/other/#moves={notation}",
+      },
+    ),
+    "https://wstein.github.io/other/#moves=R+U+F",
+  );
+});
