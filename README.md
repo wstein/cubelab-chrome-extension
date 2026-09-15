@@ -45,6 +45,10 @@ State detection does **not** prove physical solvability. Permutation-cycle suppo
 
 Lowercase moves are modern wide turns by default. Some Ruwix 4×4 and old CubeDB pages use `r = 2R`; select **Legacy inner slices** explicitly for those sites. Plaintext `F2'` is a half turn, not a guessed lost subscript. Actual HTML/Unicode subscripts avoid that ambiguity.
 
+Repeated compact groups such as `(RU RF)2` are expanded as moves. Without a
+repeat or inverse suffix, an ambiguous group such as `(RU RF)` is interpreted as
+a permutation cycle. Invalid repeat counts are rejected, not silently removed.
+
 ## Integration contract
 
 Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 2026-09-15:

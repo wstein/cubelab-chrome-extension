@@ -360,15 +360,6 @@
       const r = facelets(m[0]);
       if (r) add(m.index, m.index + m[0].length, r);
     }
-    for (const m of text.matchAll(/(?:\([^()]+\)\s*)+/g)) {
-      const raw = m[0].trimEnd();
-      const p = options.size > 3 ? null : permutation(raw);
-      add(
-        m.index,
-        m.index + raw.length,
-        p ? { ...p, size: options.size || 3 } : null,
-      );
-    }
     // Try complete standalone expressions, including nested groups/commutators.
     const trim = text.trim();
     const whole = classify(trim, options);
@@ -384,6 +375,19 @@
       const r = classify(raw, options);
       if (r && (options.cubeContext || /[URFDLBMES]/.test(raw)))
         add(m.index, m.index + raw.length, r);
+    }
+    // Complete expressions own their spans before cycle extraction: (RU RF)2
+    // is a repeated move group, not the cycle (RU RF).
+    for (const m of text.matchAll(/(?:\([^()]+\)\s*)+/g)) {
+      const raw = m[0].trimEnd();
+      // Never salvage a cycle by discarding an invalid repeat or inverse.
+      if (/^[0-9'’‘′´`)\]]/.test(text.slice(m.index + raw.length))) continue;
+      const p = options.size > 3 ? null : permutation(raw);
+      add(
+        m.index,
+        m.index + raw.length,
+        p ? { ...p, size: options.size || 3 } : null,
+      );
     }
     return found.sort((a, b) => a.start - b.start);
   }

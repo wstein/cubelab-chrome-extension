@@ -213,3 +213,53 @@ test("Orbit64 requires an explicit label for automatic detection", () => {
   assert.equal(detect("Orbit64: AAAAA")[0].size, 2);
   assert.equal(detect("AAAAA").length, 0);
 });
+
+test("compact repeated groups retain their full expression and offsets", () => {
+  for (const expression of [
+    "(RU RF)2",
+    "(RU RF)2'",
+    "[R: (RU RF)2]",
+    "((RU RF)2)2",
+  ]) {
+    for (const text of [expression, `Algorithm: ${expression}.`]) {
+      const results = detect(text);
+      assert.equal(results.length, 1, text);
+      const [result] = results;
+      assert.equal(result.kind, "moves", text);
+      assert.equal(result.notation, D.parseMoves(expression).moves.join(" "));
+      assert.equal(result.source, expression);
+      assert.equal(text.slice(result.start, result.end), expression);
+      assert.equal(
+        new URLSearchParams(new URL(D.makeURL(result)).hash.slice(1)).get(
+          "moves",
+        ),
+        result.notation,
+      );
+    }
+  }
+});
+
+test("invalid repeated groups are not truncated to permutation cycles", () => {
+  for (const expression of [
+    "(RU RF)0",
+    "(RU RF)999",
+    "((RU RF)100)100",
+    "((RU RF))0",
+  ]) {
+    assert.deepEqual(detect(expression), [], expression);
+    assert.deepEqual(detect(`Algorithm: ${expression}.`), [], expression);
+  }
+});
+
+test("unsuffixed cycles retain precedence and orientation metadata in prose", () => {
+  for (const expression of [
+    "(RU RF)",
+    "(URF,UBR) (UFL,ULB)",
+    "(ur,dr) (rf,rb) (++r) (++u)",
+  ]) {
+    const results = detect(`Permutation: ${expression}.`);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].kind, "permutation");
+    assert.equal(results[0].source, expression);
+  }
+});

@@ -40,3 +40,12 @@ Messages that modify settings are accepted only from this extension's pages.
 
 Regression tests cover concurrent updates, stale UI snapshots, validation,
 failed-write recovery, reset ordering, and visible save errors.
+
+### Detection precedence
+
+Complete expressions and prose-bounded candidate runs are classified before
+extracting standalone permutation cycles. A repeat suffix disambiguates compact
+groups: `(RU RF)2` expands to moves, while unsuffixed `(RU RF)` retains the
+existing cycle interpretation. Invalid repeats are rejected without dropping
+their suffix. Regression tests cover prose, offsets, nested groups, inverse
+repeats, URL payloads, and preserved cycle orientation metadata.
