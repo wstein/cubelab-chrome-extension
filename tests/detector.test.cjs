@@ -3,6 +3,41 @@ const assert = require("node:assert/strict");
 const D = require("../detector.js");
 const detect = (s) => D.detect(s, { cubeContext: true });
 const alg = "R U' F2";
+test("all destination templates receive original notation rather than parsed equivalents", () => {
+  const net = "UU\nUU\nLL FF RR BB\nLL FF RR BB\nDD\nDD";
+  for (const source of [
+    "(R U′)3",
+    "[R,U]",
+    "3r  U 2-3r′",
+    "F₂′ U F₂",
+    "R-U-Ri-Ui",
+    "(ML2 D' MR2 D)2",
+    "(ur,rf,fu)",
+    net,
+  ]) {
+    const options = source === net ? { size: 2 } : { size: 5 };
+    if (source === "(ur,rf,fu)") options.size = 3;
+    for (const result of [
+      D.classify(source, options),
+      ...D.detect(source, { ...options, cubeContext: true }),
+    ]) {
+      assert.ok(result, source);
+      const url = new URL(D.makeURL(result));
+      const params = new URLSearchParams(url.hash.slice(1));
+      assert.equal(
+        params.get(result.kind === "moves" ? "moves" : "alg"),
+        source,
+      );
+      const custom = new URL(
+        D.makeURL(result, {
+          movesTemplate: "https://example.com/?input={notation}",
+          algTemplate: "https://example.com/?input={notation}",
+        }),
+      );
+      assert.equal(custom.searchParams.get("input"), source);
+    }
+  }
+});
 test("provided moves URL round trips", () => {
   const [r] = detect(alg);
   assert.equal(r.notation, alg);
@@ -59,13 +94,13 @@ test("Randelshofer grouping dots and metrics", () => {
   assert.equal(r.notation, "U2 F2 B2 U2 F2 R2 L2 F2");
   assert.equal(r.source, "U2 · F2 B2 · U2 F2 · R2 L2 · F2");
 });
-test("SSE move syntax is translated for the modern destination dialect", () => {
+test("SSE move syntax is preserved for the native destination dialect", () => {
   const [r] = detect("CD2 · MF2 U2 F2 MR2 B2 U2");
   assert.equal(r.kind, "moves");
   assert.equal(r.format, "SSE");
-  assert.equal(r.notation, "y2 2F2 U2 F2 2R2 B2 U2");
+  assert.equal(r.notation, "CD2 · MF2 U2 F2 MR2 B2 U2");
   assert.ok(D.makeURL(r).includes("/workbench#moves="));
-  assert.ok(D.makeURL(r).includes("dialect=Modern"));
+  assert.ok(D.makeURL(r).includes("dialect=Sse"));
 });
 test("wide, slice, rotation, inner-layer and 5x5 notation", () => {
   for (const s of [
@@ -235,7 +270,7 @@ test("compact repeated groups retain their full expression and offsets", () => {
         new URLSearchParams(new URL(D.makeURL(result)).hash.slice(1)).get(
           "moves",
         ),
-        result.notation,
+        expression,
       );
     }
   }

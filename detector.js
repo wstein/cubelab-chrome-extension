@@ -410,7 +410,7 @@
       ? { kind: "permutation", notation: s, size: null, confidence: "high" }
       : null;
   }
-  function classify(source, options = {}) {
+  function classifyParsed(source, options = {}) {
     const s = normalize(source).trim();
     if (!s || s.length > 8000) return null;
     const state = facelets(s) || cubieState(s) || coordinates(s);
@@ -430,9 +430,9 @@
           return {
             kind: "moves",
             format: "SSE",
-            notation: parsed.moves.join(" "),
+            notation: source.trim(),
             size,
-            dialect: "Modern",
+            dialect: "Sse",
             lowercaseMode: "Wide",
             confidence: "high",
           };
@@ -458,6 +458,10 @@
       minSize: parsed.minSize,
       confidence: "medium",
     };
+  }
+  function classify(source, options = {}) {
+    const result = classifyParsed(source, options);
+    return result ? { ...result, source: source.trim() } : null;
   }
   function inferSize(text) {
     const found = [
@@ -566,7 +570,7 @@
   function makeURL(result, settings = DEFAULTS) {
     const template =
       result.kind === "moves" ? settings.movesTemplate : settings.algTemplate;
-    const encoded = new URLSearchParams({ n: result.notation })
+    const encoded = new URLSearchParams({ n: result.source ?? result.notation })
       .toString()
       .slice(2);
     const value = template

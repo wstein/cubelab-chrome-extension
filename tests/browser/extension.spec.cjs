@@ -70,13 +70,13 @@ test("SiGN widgets and tester translate blocks, setup and boundary layers", asyn
     const params = new URLSearchParams(
       new URL(await badge.getAttribute("href")).hash.slice(1),
     );
-    expect(params.get("moves")).toBe("x U L");
-    expect(params.get("alg")).toBe("y");
+    expect(params.get("moves")).toBe(source);
+    expect(params.get("alg")).toBe(`${size}u`);
     expect(Number(params.get("size") || 3)).toBe(size);
     await options.locator("#testSize").selectOption(String(size));
     await options.locator("#notation").fill(source);
     await options.locator("#test").click();
-    await expect(options.locator("#results")).toContainText("x U L");
+    await expect(options.locator("#results")).toContainText(source);
   }
   await page.evaluate(() => {
     document.body.innerHTML =
@@ -88,7 +88,7 @@ test("SiGN widgets and tester translate blocks, setup and boundary layers", asyn
       await page.locator(".cubelab-link").getAttribute("href"),
     ).hash.slice(1),
   );
-  expect(params.get("moves")).toBe("3Rw U 2-3Rw'");
+  expect(params.get("moves")).toBe("3r U 2-3r′");
 });
 
 test("SSE page links and tester preserve the intended cube size", async ({
@@ -111,8 +111,8 @@ test("SSE page links and tester preserve the intended cube size", async ({
     new URL(await badge.getAttribute("href")).hash.slice(1),
   );
   expect(params.get("size")).toBe("5");
-  expect(params.get("dialect")).toBe("Modern");
-  expect(params.get("moves")).toContain("2-4Rw'");
+  expect(params.get("dialect")).toBe("Sse");
+  expect(params.get("moves")).toBe(sample);
   expect(
     await page.locator("#sse").evaluate((p) =>
       [...p.childNodes]
@@ -123,9 +123,9 @@ test("SSE page links and tester preserve the intended cube size", async ({
   ).toBe(sample);
   const options = await openUI(context, extensionId, "options");
   for (const [size, input, moves] of [
-    [2, "CR U F", "x U F"],
-    [3, "MR U F", "2R U F"],
-    [4, "MR U F", "2R U F"],
+    [2, "CR U F", "CR U F"],
+    [3, "MR U F", "MR U F"],
+    [4, "MR U F", "MR U F"],
     [5, sample, params.get("moves")],
   ]) {
     await options.locator("#testSize").selectOption(String(size));
@@ -253,7 +253,7 @@ test("rescanning preserves actual DOM nodes and badge clicks carry complete move
   await destination.waitForURL("https://wstein.github.io/cubelab/workbench#**");
   expect(
     new URLSearchParams(new URL(destination.url()).hash.slice(1)).get("moves"),
-  ).toBe("R U R F R U R F");
+  ).toBe("(RU RF)2");
   expect(await destination.evaluate(() => window.opener)).toBeNull();
 });
 

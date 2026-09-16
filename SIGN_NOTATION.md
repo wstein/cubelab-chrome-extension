@@ -3,7 +3,11 @@
 The extension supports core [Simple General Notation (SiGN)](https://www.mzrg.com/rubik/nota.shtml)
 on 2×2×2 through 5×5×5 alongside WCA and SSE.
 
-| Input           | Meaning                                        | CubeLab representation                       |
+Links and tester output preserve the original SiGN expression. The equivalents
+below explain internal validation only; CubeLab receives the source notation
+and is responsible for interpreting it.
+
+| Input           | Meaning                                        | Internal equivalent only                     |
 | --------------- | ---------------------------------------------- | -------------------------------------------- |
 | `R`, `U'`, `F2` | Outer face turns                               | Unchanged                                    |
 | `2R`, `3U`      | One numbered layer counted from the named face | Explicit numbered layer                      |
@@ -24,14 +28,14 @@ as rotations only with a known size. WCA `w` aliases receive the same geometric
 treatment; this is not a WCA legality checker.
 
 Use the default **Wide** lowercase setting for SiGN. The legacy **InnerSlice**
-site setting is a different convention. Numbered lowercase blocks always
-translate to unambiguous uppercase `w` moves.
+site setting is a different convention. Numbered lowercase blocks are
+preserved in links, not replaced with uppercase `w` moves.
 
 Optional big-cube `M/E/S` and `m/e/s` extensions in the reference are not core
 SiGN support. Existing `M/E/S` behavior remains limited to odd cubes; use
 numbered layers or ranges for portable big-cube algorithms. Non-cube and
 less-common extension operators are outside this scope.
 
-Widget setup algorithms are validated and translated using the same size as
+Widget setup algorithms are validated and preserved using the same size as
 the main moves. Invalid setup algorithms suppress the link. Original page
 notation and widget attributes remain unchanged.

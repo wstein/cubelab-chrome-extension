@@ -3,6 +3,24 @@ const assert = require("node:assert/strict");
 const D = require("../detector");
 const numbered = require("./fixtures/numbered-sse.cjs");
 
+test("Revenge SSE repetitions and original spelling survive URL construction", () => {
+  for (const source of [
+    "(ML2 D' MR2 D)2",
+    "(ML2  D′\n MR2 D)2",
+    "[ML2:MR2]",
+    "(ML2 D- MR2 D)2",
+  ]) {
+    const [result] = D.detect(`Algorithm: ${source}`, { size: 4 });
+    assert.equal(result.notation, source);
+    const params = new URLSearchParams(
+      new URL(D.makeURL(result)).hash.slice(1),
+    );
+    assert.equal(params.get("moves"), source);
+    assert.equal(params.get("dialect"), "Sse");
+    assert.equal(params.get("size"), "4");
+  }
+});
+
 test("numbered SSE wings and centres remain one complete size-aware state", () => {
   for (const options of [{}, { size: 5 }]) {
     for (const text of [numbered, `Permutation: ${numbered}. Done.`]) {
@@ -159,7 +177,7 @@ test("SSE groups, inverse repeats, commutators and conjugates expand together", 
   assert.equal(parse("CR2·R-U-F-", 2), "x2 R' U' F'");
 });
 
-test("reported 5x5 sequence remains one complete modern link", () => {
+test("reported 5x5 sequence remains one unchanged SSE link", () => {
   for (const text of [
     sample,
     `Algorithm: ${sample}`,
@@ -170,14 +188,14 @@ test("reported 5x5 sequence remains one complete modern link", () => {
     const [result] = results;
     assert.equal(
       result.notation,
-      "D2 F2 L' F2 B2 L D' 2-4Rw' D' F2 D 2-4Rw D' 3Bw 2Uw 3Bw 2Lw2 2Fw' 2Dw' 2Lw 3D2 2Bw 2Uw2 2Lw2 2Fw 3R2 2Uw 2Fw'",
+      text.startsWith("Algorithm:") ? sample : text,
     );
     assert.equal(result.source, text.startsWith("Algorithm:") ? sample : text);
     assert.equal(text.slice(result.start, result.end), result.source);
     const params = new URLSearchParams(
       new URL(D.makeURL(result)).hash.slice(1),
     );
-    assert.equal(params.get("dialect"), "Modern");
+    assert.equal(params.get("dialect"), "Sse");
     assert.equal(params.get("size"), "5");
     assert.equal(params.get("moves"), result.notation);
   }
@@ -190,7 +208,7 @@ test("SSE size defaults and explicit sizes are respected", () => {
   assert.equal(D.classify("CR R U", { size: 2 }).size, 2);
   assert.equal(
     D.classify("R- U F", { size: 2, dialect: "Sse" }).notation,
-    "R' U F",
+    "R- U F",
   );
   assert.equal(D.classify("TR", { minMoves: 3 }), null);
 });
@@ -239,7 +257,7 @@ test("SSE visual separators stay inside a complete prose-bounded candidate", () 
   const text = "Algorithm: TR . MR2 · WR. More text.";
   const [result] = D.detect(text, { size: 5 });
   assert.equal(result.source, "TR . MR2 · WR");
-  assert.equal(result.notation, "2Rw 3R2 2-4Rw");
+  assert.equal(result.notation, "TR . MR2 · WR");
   assert.equal(D.detect("Algorithm: R U F.")[0].source, "R U F");
 });
 

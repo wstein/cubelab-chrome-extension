@@ -62,15 +62,15 @@ async function setup(
 }
 const links = (x) => [...x.doc.querySelectorAll(".cubelab-link")];
 
-test("SSE widgets translate setup in the same size and dialect as their moves", async (t) => {
+test("SSE widgets preserve setup in the same size and dialect as their moves", async (t) => {
   const x = await setup(
     '<twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="MR2"></twisty-player><twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="W6R"></twisty-player>',
   );
   t.after(() => x.dom.window.close());
   assert.equal(links(x).length, 1);
   const params = new URLSearchParams(new URL(links(x)[0].href).hash.slice(1));
-  assert.equal(params.get("alg"), "3R2");
-  assert.equal(params.get("dialect"), "Modern");
+  assert.equal(params.get("alg"), "MR2");
+  assert.equal(params.get("dialect"), "Sse");
 });
 
 test("rescans reuse badges and text nodes; disabling restores extension splits", async (t) => {
@@ -203,7 +203,7 @@ test("inline markup, subscript layers, separate algorithms and no duplication", 
   );
   try {
     assert.equal(links(x).length, 2);
-    assert.ok(links(x)[1].href.includes("2Fw"));
+    assert.ok(decodeURIComponent(links(x)[1].href).includes("F₂"));
     const before = x.doc.querySelector("b");
     x.scan();
     x.scan();
@@ -283,11 +283,14 @@ test("Ruwix data-alg cards and Twizzle setup get useful links", async () => {
     const p = new URLSearchParams(new URL(links(x)[1].href).hash.slice(1));
     assert.equal(p.get("size"), "4");
     assert.equal(p.get("alg"), "R U");
-    assert.equal(p.get("moves"), "Rw U Rw'");
+    assert.equal(p.get("moves"), "Rw U Rw′");
     x.doc.querySelector("[data-alg]").setAttribute("data-alg", "R U R′ U′");
     await delay(350);
     assert.equal(links(x).length, 2);
-    assert.ok(links(x)[0].href.includes("R+U+R%27+U%27"));
+    assert.equal(
+      new URLSearchParams(new URL(links(x)[0].href).hash.slice(1)).get("moves"),
+      "R U R′ U′",
+    );
   } finally {
     x.dom.window.close();
   }

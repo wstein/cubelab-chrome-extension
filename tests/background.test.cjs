@@ -130,7 +130,7 @@ test("selection menu registration is idempotent and respects site dialect prefer
     { url: "https://example.com/", title: "Cube" },
   );
   const params = new URLSearchParams(new URL(tabs[0]).hash.slice(1));
-  assert.equal(params.get("moves"), "r U r'");
+  assert.equal(params.get("moves"), "r U r′");
   assert.equal(params.get("size"), "4");
   assert.equal(params.get("lowercase"), "InnerSlice");
 });

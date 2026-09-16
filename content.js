@@ -310,7 +310,7 @@
       if (match.format === "SSE") {
         const parsed = D.parseSse(setup, match.size);
         if (!parsed) return null;
-        match.setup = parsed.moves.join(" ");
+        match.setup = setup;
       } else {
         const parsed = D.classify(setup, {
           size: match.size,
@@ -318,7 +318,7 @@
           lowercaseMode: match.lowercaseMode,
         });
         if (parsed?.kind !== "moves") return null;
-        match.setup = parsed.notation;
+        match.setup = setup;
       }
     }
     return match;

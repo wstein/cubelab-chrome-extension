@@ -1,11 +1,15 @@
 # Randelshofer SSE moves
 
 CubeLab Linker detects Superset ENG (SSE) move sequences for 2×2 through 5×5
-cubes and converts them to explicit modern layer moves before opening CubeLab.
+cubes and passes the original notation to CubeLab without rewriting it.
 The page text remains unchanged. Badges identify the source as SSE and show the
-cube size; the URL carries `dialect=Modern` and the converted moves.
+cube size; the URL carries `dialect=Sse`. Groups, repetitions, spacing and
+original prime characters remain intact, e.g. `(ML2 D' MR2 D)2` on 4×4.
 
 ## Layer semantics
+
+These equivalents describe internal validation only. They are not emitted in
+links or displayed as replacements for the source notation.
 
 Layer numbers count from the named face toward its opposite. All selected
 layers turn in the direction seen from that named face. Opposite-face moves
@@ -78,11 +82,10 @@ support and accept the reported Professor Cube sequence. At `08c972f`, however,
 native SSE still rejects 4×4 `MR`, 5×5 `M2R`, and 2×2 `N2R`, and applies one extra
 far-side layer for `S2-3R`. These differ from the references above.
 
-The extension consistently emits explicit modern moves for SSE input. This
-keeps layer semantics independent of those native SSE differences. Validation
-against CubeLab `08c972f` matched 288 individual move states and the complete
-reported sequence where native SSE agrees with the documentation. Remaining
-documented cases have direct layer-diagram regression tests.
+The extension preserves source notation even where a destination parser may
+reject or interpret it differently. It no longer substitutes modern moves to
+work around native SSE differences. The internal layer-validation tests remain;
+CubeLab is responsible for execution of the original SSE expression.
 
 ## Size selection
 
@@ -92,6 +95,6 @@ precedence; conflicting hints remain unresolved. The notation tester offers an
 independent 2×2–5×5 size selector. Use the popup's per-site size override when a
 page does not identify its puzzle.
 
-SSE widgets translate their setup algorithm using the same size and dialect as
+SSE widgets preserve their setup algorithm using the same size and dialect as
 their moves. Invalid SSE setups suppress the link rather than opening a
 different starting state.

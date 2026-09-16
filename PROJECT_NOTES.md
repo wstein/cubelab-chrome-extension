@@ -1,5 +1,22 @@
 # Project notes
 
+## Original notation delegation (supersedes earlier translation policies)
+
+Every destination URL now uses the original detected source rather than an
+internal parsed equivalent. This includes WCA/modern and SiGN expressions,
+Unicode primes/subscripts, cycle states and multiline nets. The tester and
+widget setups preserve source text too. CubeLab owns interpretation; detection
+still uses bounded parsing and records routing metadata. Unit/DOM tests: 76;
+coverage: 100% lines/functions and 98.09% branches. Earlier translation notes
+below are historical and no longer describe emitted notation.
+
+SSE move links now carry the original expression with `dialect=Sse` rather
+than expanded modern moves. Grouping, repetitions, spacing, separators and
+prime spelling remain intact. SSE widget setup text is also preserved.
+Internal expansion is used only for bounded syntax/layer validation. Native
+CubeLab SSE limitations are not worked around by rewriting source notation.
+Regression: `(ML2 D' MR2 D)2` remains unchanged on 4×4.
+
 ## Numbered SSE permutation detection
 
 The full reported multiline wing/centre state now retains one span and routes
