@@ -134,7 +134,7 @@ updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 98.09%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
-Eight Chromium tests cover numbered SSE Setup links, SiGN/SSE size selection and translation, installation, real inline visibility, responsive CSS,
+Nine Chromium tests cover original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
 popup/options persistence, site disabling, widget sizes/setup, context-menu
 registration, and badge navigation. The destination is intercepted to verify

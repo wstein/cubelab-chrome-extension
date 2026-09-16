@@ -10,6 +10,11 @@ still uses bounded parsing and records routing metadata. Unit/DOM tests: 76;
 coverage: 100% lines/functions and 98.09% branches. Earlier translation notes
 below are historical and no longer describe emitted notation.
 
+Browser verification includes a local fixture at the reported Revenge URL,
+checking path-based 4×4 inference, unchanged page text, original grouped SSE in
+the navigation URL and tester output. Nine Chromium tests pass; live CubeLab
+execution remains the destination's responsibility. Formatter and lint pass.
+
 SSE move links now carry the original expression with `dialect=Sse` rather
 than expanded modern moves. Grouping, repetitions, spacing, separators and
 prime spelling remain intact. SSE widget setup text is also preserved.

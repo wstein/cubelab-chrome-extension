@@ -1,6 +1,48 @@
 const { test, expect } = require("./fixtures.cjs");
 const numberedSse = require("../fixtures/numbered-sse.cjs");
 
+test("Revenge page delegates grouped SSE unchanged through navigation and tester", async ({
+  page,
+  context,
+  extensionId,
+}) => {
+  const source = "(ML2 D' MR2 D)2";
+  const url = "https://www.randelshofer.ch/rubik/revenge/A200.01.html";
+  // Local fixture at the reported URL: deterministic, with real path-size inference.
+  await context.route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><title>Pretty Patterns Revenge Cube</title><h1>Algorithm</h1><p id="algorithm">${source}</p>`,
+    }),
+  );
+  await page.goto(url);
+  const badge = page.locator("#algorithm .cubelab-link");
+  await expect(badge).toHaveCount(1);
+  await expect(badge).toContainText("4×4 SSE moves");
+  expect(
+    await page
+      .locator("#algorithm")
+      .evaluate((element) => element.firstChild.textContent),
+  ).toBe(source);
+  await context.route("https://wstein.github.io/cubelab/**", (route) =>
+    route.fulfill({ body: "Destination intercepted." }),
+  );
+  const opened = context.waitForEvent("page");
+  await badge.click();
+  const destination = await opened;
+  await destination.waitForURL("https://wstein.github.io/cubelab/workbench#**");
+  const params = new URLSearchParams(new URL(destination.url()).hash.slice(1));
+  expect(params.get("moves")).toBe(source);
+  expect(params.get("dialect")).toBe("Sse");
+  expect(params.get("size")).toBe("4");
+  const options = await openUI(context, extensionId, "options");
+  await options.locator("#testSize").selectOption("4");
+  await options.locator("#notation").fill(source);
+  await options.locator("#test").click();
+  await expect(options.locator("#results")).toContainText(source);
+  await expect(options.locator("#results")).not.toContainText("2L2");
+});
+
 test("numbered SSE cycles navigate intact to size-aware Setup", async ({
   page,
   site,
@@ -49,7 +91,7 @@ test("numbered SSE cycles navigate intact to size-aware Setup", async ({
   ).toBe(numberedSse);
 });
 
-test("SiGN widgets and tester translate blocks, setup and boundary layers", async ({
+test("SiGN widgets and tester preserve blocks, setup and boundary layers", async ({
   page,
   site,
   context,
