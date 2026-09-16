@@ -24,7 +24,8 @@ Numbered 4×4/5×5 SSE wing and centre cycles now route to Setup. CubeLab
 `07911e6` accepts their grammar but has a known cycle-application bug; see
 [SSE_NOTATION.md](SSE_NOTATION.md). The observations below predate this support.
 
-All outgoing notation is now delegated unchanged. Internal detection may
+Outgoing notation receives whitespace-only cleanup (collapse runs to one space
+and trim), with no other rewriting. Internal detection may
 validate equivalents but never emits them instead of the original source.
 Destination parser differences are not worked around by rewriting notation.
 

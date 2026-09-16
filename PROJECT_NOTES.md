@@ -1,5 +1,17 @@
 # Project notes
 
+## Whitespace-only cleanup
+
+Outgoing original notation, widget setup parameters and tester output now
+collapse whitespace runs (including newlines, tabs and nonbreaking spaces)
+to one space and trim the ends. No move, group, repeat, prime, subscript,
+orientation marker or separator is rewritten. Raw source spans, page text and
+tester input remain intact. This refines the source-preservation policy below.
+Regression tests cover Unicode whitespace, idempotence, custom destinations,
+setup parameters, multiline states and the grouped Revenge-page example.
+Verification: formatter, lint, 77 unit/DOM tests and nine Chromium tests pass.
+Detector coverage is 100% lines/functions and 98.33% branches.
+
 ## Original notation delegation (supersedes earlier translation policies)
 
 Every destination URL now uses the original detected source rather than an

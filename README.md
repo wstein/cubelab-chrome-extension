@@ -29,19 +29,21 @@ cube sizes.
 
 All links delegate the original detected notation to CubeLab. The extension
 does not rewrite moves, expand groups, normalize primes, or reorder nets in
-the URL. Parsing below is only for detection and size/dialect metadata. The
-tester displays the original notation, and widget setup text is preserved too.
+the URL. The only cleanup is whitespace: line breaks, tabs and other whitespace
+become one space, repeated spaces collapse, and leading/trailing spaces are
+trimmed. This applies to links, setup parameters and tester output, not page
+text or the tester input. Parsing below is only for detection and metadata.
 
 | Input                                                           | Handling                                                                    |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `R U' F2`, `RUR'U'`, Unicode primes, `Ri`, dash-separated moves | Recognize syntax; preserve original spelling and spacing                    |
+| `R U' F2`, `RUR'U'`, Unicode primes, `Ri`, dash-separated moves | Recognize syntax; preserve spelling with whitespace-only cleanup            |
 | `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3 and 5×5             |
 | `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Validate with a 2,000-move expansion limit; send original groups            |
 | Ruwix `F₂'` or actual HTML `<sub>2</sub>`                       | Preserve subscript notation (`<sub>` is extracted as Unicode)               |
 | SSE 2×2–5×5, including `WR`, `T3B`, `N2-3R`, and `S2-3R`        | Preserve the original expression, grouping and spelling; send `dialect=Sse` |
 | SSE / Singmaster / basic ACube cycles                           | Preserve cycles and orientation signs; use state input                      |
 | URFDLB strings, 24/54/96/150 facelets                           | Check counts, infer size, preserve face order                               |
-| WOGRBY colour strings and canonical cube nets                   | Check counts; preserve source layout; configurable Western/Japanese scheme  |
+| WOGRBY colour strings and canonical cube nets                   | Check counts; preserve source order; configurable Western/Japanese scheme   |
 | Complete ACube positional states                                | Recognize 12 distinct edges + 8 distinct corners                            |
 | `cp: …; co: …` with optional `ep: …; eo: …`                     | Check coordinate lengths, ranges and permutation uniqueness                 |
 | Explicitly labelled `Orbit64: …`                                | Identify token-width candidates and send to CubeLab for actual validation   |
@@ -128,10 +130,10 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 76 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 77 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 98.09%. This gate covers
+least 93% of branches; the measured branch coverage is 98.33%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
 Nine Chromium tests cover original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,

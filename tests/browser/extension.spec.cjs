@@ -6,7 +6,8 @@ test("Revenge page delegates grouped SSE unchanged through navigation and tester
   context,
   extensionId,
 }) => {
-  const source = "(ML2 D' MR2 D)2";
+  const source = "(ML2  D'\n MR2\tD)2";
+  const cleaned = "(ML2 D' MR2 D)2";
   const url = "https://www.randelshofer.ch/rubik/revenge/A200.01.html";
   // Local fixture at the reported URL: deterministic, with real path-size inference.
   await context.route(url, (route) =>
@@ -32,14 +33,15 @@ test("Revenge page delegates grouped SSE unchanged through navigation and tester
   const destination = await opened;
   await destination.waitForURL("https://wstein.github.io/cubelab/workbench#**");
   const params = new URLSearchParams(new URL(destination.url()).hash.slice(1));
-  expect(params.get("moves")).toBe(source);
+  expect(params.get("moves")).toBe(cleaned);
   expect(params.get("dialect")).toBe("Sse");
   expect(params.get("size")).toBe("4");
   const options = await openUI(context, extensionId, "options");
   await options.locator("#testSize").selectOption("4");
   await options.locator("#notation").fill(source);
   await options.locator("#test").click();
-  await expect(options.locator("#results")).toContainText(source);
+  await expect(options.locator("#results")).toContainText(cleaned);
+  await expect(options.locator("#notation")).toHaveValue(source);
   await expect(options.locator("#results")).not.toContainText("2L2");
 });
 
@@ -73,7 +75,7 @@ test("numbered SSE cycles navigate intact to size-aware Setup", async ({
   const destination = await opened;
   await destination.waitForURL("https://wstein.github.io/cubelab/#**");
   const params = new URLSearchParams(new URL(destination.url()).hash.slice(1));
-  expect(params.get("alg")).toBe(numberedSse);
+  expect(params.get("alg")).toBe(numberedSse.replace("\n", " "));
   expect(params.get("size")).toBe("5");
   expect(params.has("moves")).toBe(false);
   const options = await openUI(context, extensionId, "options");
@@ -88,7 +90,7 @@ test("numbered SSE cycles navigate intact to size-aware Setup", async ({
         await options.locator("#results a").getAttribute("href"),
       ).hash.slice(1),
     ).get("alg"),
-  ).toBe(numberedSse);
+  ).toBe(numberedSse.replace("\n", " "));
 });
 
 test("SiGN widgets and tester preserve blocks, setup and boundary layers", async ({

@@ -15,7 +15,7 @@ test("Revenge SSE repetitions and original spelling survive URL construction", (
     const params = new URLSearchParams(
       new URL(D.makeURL(result)).hash.slice(1),
     );
-    assert.equal(params.get("moves"), source);
+    assert.equal(params.get("moves"), source.replace(/\s+/g, " "));
     assert.equal(params.get("dialect"), "Sse");
     assert.equal(params.get("size"), "4");
   }
@@ -33,7 +33,7 @@ test("numbered SSE wings and centres remain one complete size-aware state", () =
       const url = new URL(D.makeURL(found[0]));
       const params = new URLSearchParams(url.hash.slice(1));
       assert.equal(url.pathname, "/cubelab/");
-      assert.equal(params.get("alg"), numbered);
+      assert.equal(params.get("alg"), numbered.replace("\n", " "));
       assert.equal(params.get("size"), "5");
       assert.equal(params.has("moves"), false);
     }

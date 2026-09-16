@@ -3,6 +3,28 @@ const assert = require("node:assert/strict");
 const D = require("../detector.js");
 const detect = (s) => D.detect(s, { cubeContext: true });
 const alg = "R U' F2";
+test("outgoing whitespace cleanup preserves every notation character", () => {
+  const source = " \t(ML2\r\n D′\u00a0\u2003MR2   D)2  [R,U]\tF₂' ++r7 ↗ \n";
+  const expected = "(ML2 D′ MR2 D)2 [R,U] F₂' ++r7 ↗";
+  assert.equal(D.cleanWhitespace(source), expected);
+  assert.equal(D.cleanWhitespace(expected), expected);
+  assert.equal(D.cleanWhitespace(" \n\t"), "");
+  const params = new URLSearchParams(
+    new URL(
+      D.makeURL({
+        kind: "moves",
+        source,
+        notation: "must not be used",
+        setup: "\n (TR  U)2\t",
+        size: 4,
+        dialect: "Sse",
+      }),
+    ).hash.slice(1),
+  );
+  assert.equal(params.get("moves"), expected);
+  assert.equal(params.get("alg"), "(TR U)2");
+  assert.equal(params.get("dialect"), "Sse");
+});
 test("all destination templates receive original notation rather than parsed equivalents", () => {
   const net = "UU\nUU\nLL FF RR BB\nLL FF RR BB\nDD\nDD";
   for (const source of [
@@ -26,7 +48,7 @@ test("all destination templates receive original notation rather than parsed equ
       const params = new URLSearchParams(url.hash.slice(1));
       assert.equal(
         params.get(result.kind === "moves" ? "moves" : "alg"),
-        source,
+        source.replace(/\s+/g, " ").trim(),
       );
       const custom = new URL(
         D.makeURL(result, {
@@ -34,7 +56,10 @@ test("all destination templates receive original notation rather than parsed equ
           algTemplate: "https://example.com/?input={notation}",
         }),
       );
-      assert.equal(custom.searchParams.get("input"), source);
+      assert.equal(
+        custom.searchParams.get("input"),
+        source.replace(/\s+/g, " ").trim(),
+      );
     }
   }
 });
@@ -80,7 +105,7 @@ test("permutation cycles and oriented centers stay together", () => {
   assert.equal(result[0].kind, "permutation");
   assert.equal(
     new URLSearchParams(new URL(D.makeURL(result[0])).hash.slice(1)).get("alg"),
-    s,
+    s.replace(/\s+/g, " "),
   );
 });
 test("reject impossible cubie labels and prose parentheses", () => {

@@ -6,6 +6,8 @@ on 2×2×2 through 5×5×5 alongside WCA and SSE.
 Links and tester output preserve the original SiGN expression. The equivalents
 below explain internal validation only; CubeLab receives the source notation
 and is responsible for interpreting it.
+Only whitespace is normalized: line breaks/tabs and repeated spaces become a
+single space, with leading/trailing whitespace removed. Page text is untouched.
 
 | Input           | Meaning                                        | Internal equivalent only                     |
 | --------------- | ---------------------------------------------- | -------------------------------------------- |

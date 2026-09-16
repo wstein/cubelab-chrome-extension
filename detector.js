@@ -13,6 +13,7 @@
     algTemplate: "https://wstein.github.io/cubelab/#alg={notation}",
   });
   const MAX = 2000;
+  const cleanWhitespace = (source) => source.replace(/\s+/gu, " ").trim();
   const normalize = (s) =>
     s
       .replace(/[’‘′´`]/g, "'")
@@ -570,7 +571,9 @@
   function makeURL(result, settings = DEFAULTS) {
     const template =
       result.kind === "moves" ? settings.movesTemplate : settings.algTemplate;
-    const encoded = new URLSearchParams({ n: result.source ?? result.notation })
+    const encoded = new URLSearchParams({
+      n: cleanWhitespace(result.source ?? result.notation),
+    })
       .toString()
       .slice(2);
     const value = template
@@ -586,7 +589,7 @@
       const params = new URLSearchParams(url.hash.slice(1));
       if (result.size && result.size !== 3)
         params.set("size", String(result.size));
-      if (result.setup) params.set("alg", result.setup);
+      if (result.setup) params.set("alg", cleanWhitespace(result.setup));
       if (result.dialect) params.set("dialect", result.dialect);
       if (
         (result.lowercaseMode || settings.lowercaseMode) === "InnerSlice" &&
@@ -600,6 +603,7 @@
   }
   const api = {
     DEFAULTS,
+    cleanWhitespace,
     normalize,
     parseMoves,
     parseSse,

@@ -3,8 +3,10 @@
 CubeLab Linker detects Superset ENG (SSE) move sequences for 2×2 through 5×5
 cubes and passes the original notation to CubeLab without rewriting it.
 The page text remains unchanged. Badges identify the source as SSE and show the
-cube size; the URL carries `dialect=Sse`. Groups, repetitions, spacing and
+cube size; the URL carries `dialect=Sse`. Groups, repetitions and
 original prime characters remain intact, e.g. `(ML2 D' MR2 D)2` on 4×4.
+Only whitespace is cleaned: whitespace runs become one space and the ends are
+trimmed. The same cleanup applies to cycle and setup URLs and tester output.
 
 ## Layer semantics
 

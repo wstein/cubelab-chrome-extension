@@ -68,7 +68,7 @@
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.textContent = `Open ${r.size}×${r.size}${r.format === "SSE" ? " SSE" : ""} ${r.kind} in CubeLab`;
-      p.append(`${r.source ?? r.notation}\n`, a);
+      p.append(`${D.cleanWhitespace(r.source ?? r.notation)}\n`, a);
       $("results").append(p);
     }
   };
