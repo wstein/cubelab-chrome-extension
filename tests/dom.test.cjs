@@ -63,6 +63,56 @@ async function setup(
 }
 const links = (x) => [...x.doc.querySelectorAll(".cubelab-link")];
 
+test("CubeLab destinations and application markers are excluded without broad title matching", async (t) => {
+  const cases = [
+    [
+      "<p>R U F</p>",
+      "https://wstein.github.io/cubelab/workbench#moves=R+U+F",
+      0,
+    ],
+    [
+      '<meta name="application-name" content=" CubeLab "><p>R U F</p>',
+      "https://mirror.example/workbench",
+      0,
+    ],
+    [
+      "<main data-converter><div data-size-control></div><textarea data-input></textarea><button data-workspace-tab></button><p>R U F</p></main>",
+      "https://localhost.example/workbench",
+      0,
+    ],
+    [
+      "<title>CubeLab algorithms</title><main data-converter><p>R U F</p></main>",
+      "https://example.com/cubes",
+      1,
+    ],
+  ];
+  const pages = [];
+  t.after(() => pages.forEach((page) => page.dom.window.close()));
+  for (const [html, url, expected] of cases) {
+    const page = await setup(html, {}, url);
+    pages.push(page);
+    assert.equal(links(page).length, expected, url);
+    assert.equal(page.status().enabled, Boolean(expected), url);
+  }
+});
+
+test("a dynamically mounted CubeLab shell removes existing decorations", async (t) => {
+  const x = await setup(
+    '<main data-converter><p id="algorithm">R U F</p></main>',
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 1);
+  const main = x.doc.querySelector("main");
+  main.insertAdjacentHTML(
+    "afterbegin",
+    "<div data-size-control></div><textarea data-input></textarea><button data-workspace-tab></button>",
+  );
+  await delay(350);
+  assert.equal(links(x).length, 0);
+  assert.equal(x.doc.getElementById("algorithm").textContent, "R U F");
+  assert.equal(x.status().enabled, false);
+});
+
 test("SSE widgets preserve setup in the same size and dialect as their moves", async (t) => {
   const x = await setup(
     '<twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="MR2"></twisty-player><twisty-player puzzle="5x5x5" alg="WR U F" experimental-setup-alg="W6R"></twisty-player>',

@@ -49,9 +49,38 @@
         scan(false);
       }, 250);
   }
+  function cubeLabPage() {
+    let pathname = location.pathname;
+    try {
+      pathname = decodeURI(pathname);
+    } catch {
+      /* Page URLs can contain malformed escapes. */
+    }
+    if (
+      location.hostname === "wstein.github.io" &&
+      (pathname === "/cubelab" || pathname.startsWith("/cubelab/"))
+    )
+      return true;
+    const applicationName = document.querySelector(
+      'meta[name="application-name" i]',
+    );
+    if (applicationName?.content.trim().toLowerCase() === "cubelab")
+      return true;
+    // Current CubeLab builds do not yet expose application-name metadata.
+    // Require its complete converter shell to avoid excluding unrelated pages
+    // that happen to use one generic data attribute.
+    const converter = document.querySelector("main[data-converter]");
+    return Boolean(
+      converter?.querySelector("[data-size-control]") &&
+      converter.querySelector("textarea[data-input]") &&
+      converter.querySelector("[data-workspace-tab]"),
+    );
+  }
   function active() {
     return (
-      settings.enabled && !settings.disabledHosts.includes(location.hostname)
+      settings.enabled &&
+      !settings.disabledHosts.includes(location.hostname) &&
+      !cubeLabPage()
     );
   }
   function clearRecord(record) {
