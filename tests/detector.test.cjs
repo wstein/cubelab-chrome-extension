@@ -118,6 +118,9 @@ test("Randelshofer grouping dots and metrics", () => {
   );
   assert.equal(r.notation, "U2 F2 B2 U2 F2 R2 L2 F2");
   assert.equal(r.source, "U2 · F2 B2 · U2 F2 · R2 L2 · F2");
+  const [r2] = detect("U2 · F2 B2 · U2 F2 · R2 L2 · F2 (12)");
+  assert.equal(r2.notation, "U2 F2 B2 U2 F2 R2 L2 F2");
+  assert.equal(r2.source, "U2 · F2 B2 · U2 F2 · R2 L2 · F2");
 });
 test("SSE move syntax is preserved for the native destination dialect", () => {
   const [r] = detect("CD2 · MF2 U2 F2 MR2 B2 U2");

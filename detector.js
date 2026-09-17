@@ -544,8 +544,8 @@
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
       // Metric suffixes in Pretty Patterns are deliberately outside the notation.
-      raw = raw.replace(/\s+\(\d+\s*$/, "").trimEnd();
-      raw = raw.replace(/\.+$/, "").trimEnd();
+      raw = raw.replace(/\s+\(\d+\*?\)?\s*$/, "").trimEnd();
+      raw = raw.replace(/[,;:!?.…]+$/, "").trimEnd();
       if (!raw || /[A-Za-z]/.test(text[m.index + raw.length] || "")) continue;
       const r = classify(raw, options);
       if (!r && sseMarker.test(raw))
