@@ -1,5 +1,17 @@
 # Project notes
 
+## CubeLab self-exclusion
+
+Manifest exclusion remains the cheapest guard for the official deployment.
+Runtime detection covers the official URL, standard `application-name=CubeLab`
+metadata, and the complete current converter shell. The structural fallback
+requires three CubeLab-specific descendants and does not rely on title text.
+Mutation handling removes stale badges if an SPA mounts the marker later.
+Verification: formatter, lint, 90 unit/DOM tests and twelve Chromium tests pass.
+The deployed page inspected on 2026-09-17 did not yet include application-name
+metadata; adding the documented meta tag upstream is the preferred long-term
+contract.
+
 ## Whitespace-only cleanup
 
 Outgoing original notation, widget setup parameters and tester output now
@@ -172,7 +184,8 @@ these behaviors, including incremental traversal and stable node identity.
 
 ### Browser validation and coverage
 
-The final suite contains 56 unit/DOM tests and five browser tests. All original
+At the initial quality review, the suite contained 56 unit/DOM tests and five
+browser tests. All original
 34 tests remain. On Node 26.8.1, detector coverage is 100% of lines and functions
 and 95.62% of branches, compared with 100%/100%/92.27% before the changes.
 `npm run test:coverage` enforces 100% lines, 100% functions, and 93% branches

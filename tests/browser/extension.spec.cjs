@@ -2,6 +2,46 @@ const { test, expect } = require("./fixtures.cjs");
 const numberedSse = require("../fixtures/numbered-sse.cjs");
 const websiteStyles = require("../fixtures/website-styles.cjs");
 
+test("CubeLab metadata and converter shell suppress self-linking", async ({
+  page,
+  context,
+  worker,
+}) => {
+  const url = "https://cubelab-mirror.example/workbench";
+  await context.route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><html><head><meta name="application-name" content="CubeLab"><title>CubeLab mirror</title></head><body><main data-converter><div data-size-control></div><textarea data-input></textarea><button data-workspace-tab></button><p id="algorithm">R U F</p></main></body></html>`,
+    }),
+  );
+  await page.goto(url);
+  await expect(page.locator(".cubelab-link")).toHaveCount(0);
+  const id = await tabId(worker, page);
+  await expect
+    .poll(() =>
+      worker.evaluate(
+        (tab) => chrome.tabs.sendMessage(tab, { type: "status" }),
+        id,
+      ),
+    )
+    .toMatchObject({ count: 0, enabled: false });
+  // Either signal independently keeps CubeLab excluded.
+  await page
+    .locator('meta[name="application-name"]')
+    .evaluate((meta) => meta.remove());
+  await expect(page.locator(".cubelab-link")).toHaveCount(0);
+  await page.locator("[data-workspace-tab]").evaluate((tab) => tab.remove());
+  await expect(page.locator("#algorithm .cubelab-link")).toHaveCount(1);
+  await expect
+    .poll(() =>
+      worker.evaluate(
+        (tab) => chrome.tabs.sendMessage(tab, { type: "status" }),
+        id,
+      ),
+    )
+    .toMatchObject({ count: 1, enabled: true });
+});
+
 test("Revenge page delegates grouped SSE unchanged through navigation and tester", async ({
   page,
   context,

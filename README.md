@@ -73,6 +73,23 @@ Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 
 
 Moves go to `/cubelab/workbench#moves=…`; states/cycles go to `/cubelab/#alg=…`. Nondefault sizes and known dialects are carried in the fragment. Twizzle widget setup algorithms are carried in `alg` alongside `moves`. CubeLab-specific parameters are added only for the default CubeLab host/path, not arbitrary custom destinations. `{notation}` and optional `{size}` placeholders support custom URL templates.
 
+### CubeLab self-exclusion
+
+The official `wstein.github.io/cubelab/` path is excluded in the manifest. A
+runtime guard also recognizes mirrors, development servers and SPA navigation.
+The preferred portable signal is this standard head element:
+
+```html
+<meta name="application-name" content="CubeLab" />
+```
+
+Until CubeLab publishes that metadata, the extension recognizes the complete
+current converter shell: `main[data-converter]` containing `data-size-control`,
+`textarea[data-input]` and `data-workspace-tab`. A title, favicon, stylesheet
+path or lone generic data attribute is intentionally insufficient, because it
+could suppress unrelated pages. If either runtime marker appears after load,
+existing extension badges are removed and the original text nodes restored.
+
 ## Page coverage and limits
 
 See [COMPATIBILITY.md](COMPATIBILITY.md) for the supplied site checklist and actual validation evidence.
@@ -130,13 +147,13 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 77 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 90 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 98.33%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
-Nine Chromium tests cover original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
+Twelve Chromium tests cover CubeLab self-exclusion, original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
 popup/options persistence, site disabling, widget sizes/setup, context-menu
 registration, and badge navigation. The destination is intercepted to verify

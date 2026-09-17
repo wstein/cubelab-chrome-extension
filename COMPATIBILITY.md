@@ -9,10 +9,11 @@ access is required.
 ## Automated browser validation
 
 The extension is now tested in Playwright's Chromium with its actual manifest,
-service worker, storage, content scripts, popup, and options page. Five tests use
+service worker, storage, content scripts, popup, and options page. Twelve tests use
 local fixtures for CSS visibility, responsive layout, DOM updates, stable badge
 nodes, toolbar permission granting, concurrent settings, 4×4/5×5 widgets,
-context-menu registration, and destination URLs. Worker tests cover selection
+context-menu registration, destination URLs, and CubeLab self-exclusion by
+metadata and converter structure. Worker tests cover selection
 handling; the native right-click menu itself is not automated. Destination
 navigation is intercepted, so live CubeLab parsing/rendering is not asserted.
 
