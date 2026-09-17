@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { JSDOM } = require("jsdom");
 const D = require("../detector");
+const websiteStyles = require("./fixtures/website-styles.cjs");
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 async function setup(
   html,
@@ -214,12 +215,26 @@ test("inline markup, subscript layers, separate algorithms and no duplication", 
     x.dom.window.close();
   }
 });
-test("never decorate editable regions, existing links or hidden content", async () => {
+test("never decorate editable regions, textareas, buttons, non-link anchors or hidden content", async () => {
   const x = await setup(
-    '<p>R U R′ U′</p><a href="/">R U R′ U′</a><textarea>R U R′ U′</textarea><div contenteditable>R U R′ U′</div><p hidden>R U R′ U′</p><button>R U R′ U′</button>',
+    '<p>R U R′ U′</p><a data-move="F">R U R′ U′</a><textarea>R U R′ U′</textarea><div contenteditable>R U R′ U′</div><p hidden>R U R′ U′</p><button>R U R′ U′</button>',
   );
   try {
     assert.equal(links(x).length, 1);
+  } finally {
+    x.dom.window.close();
+  }
+});
+test("decorate existing hyperlinks by placing badge after the host anchor", async () => {
+  const x = await setup(
+    '<a id="src" href="https://alg.cubing.net"><span>R U R′ U′</span></a>',
+  );
+  try {
+    assert.equal(links(x).length, 1);
+    const link = links(x)[0];
+    const anchor = x.doc.getElementById("src");
+    assert.equal(anchor.querySelector(".cubelab-link"), null);
+    assert.equal(anchor.nextElementSibling, link);
   } finally {
     x.dom.window.close();
   }
@@ -295,3 +310,46 @@ test("Ruwix data-alg cards and Twizzle setup get useful links", async () => {
     x.dom.window.close();
   }
 });
+
+for (const [key, style] of Object.entries(websiteStyles)) {
+  test(`supported website style: ${style.name} (${key})`, async () => {
+    const x = await setup(style.html, {}, style.url);
+    try {
+      const found = links(x);
+      assert.equal(
+        found.length,
+        style.expectedLinks,
+        `Expected ${style.expectedLinks} links for ${style.name}, got ${found.length}`,
+      );
+      if (style.expectedSize) {
+        for (const link of found) {
+          const p = new URLSearchParams(new URL(link.href).hash.slice(1));
+          const expectedParam =
+            style.expectedSize === 3 ? null : String(style.expectedSize);
+          assert.equal(
+            p.get("size"),
+            expectedParam,
+            `Expected size param ${expectedParam} for ${style.name}`,
+          );
+        }
+      }
+      if (style.expectedMoves) {
+        for (let i = 0; i < style.expectedMoves.length; i++) {
+          const p = new URLSearchParams(new URL(found[i].href).hash.slice(1));
+          assert.equal(p.get("moves"), style.expectedMoves[i]);
+        }
+      }
+      if (style.expectedPlacement === "after-anchor") {
+        for (const link of found) {
+          assert.ok(
+            link.previousElementSibling &&
+              link.previousElementSibling.tagName.toLowerCase() === "a",
+            "Badge should be placed after host anchor",
+          );
+        }
+      }
+    } finally {
+      x.dom.window.close();
+    }
+  });
+}
