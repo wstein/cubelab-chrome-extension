@@ -12,7 +12,8 @@ const html = `<!doctype html><html><head><title>Cube algorithms</title>
 <p id="boundary">R <span class="invisible">U</span> F</p>
 <p id="contents"><span style="display:contents">R U F</span></p>
 <p contenteditable>R U F</p>
-<a href="/existing">R U F</a>
+<button id="button">R U F</button>
+<a data-move="F">R U F</a>
 <div id="dynamic"></div>
 </body></html>`;
 

@@ -1,5 +1,6 @@
 const { test, expect } = require("./fixtures.cjs");
 const numberedSse = require("../fixtures/numbered-sse.cjs");
+const websiteStyles = require("../fixtures/website-styles.cjs");
 
 test("Revenge page delegates grouped SSE unchanged through navigation and tester", async ({
   page,
@@ -236,7 +237,9 @@ test("installed extension respects real inline visibility and dynamic content", 
   await page.goto(site);
   await expect(page.locator(".cubelab-link")).toHaveCount(4);
   await expect(
-    page.locator("#hidden a, #boundary a, [contenteditable] a"),
+    page.locator(
+      "#hidden a, #boundary a, [contenteditable] a, #button a, a[data-move] a",
+    ),
   ).toHaveCount(0);
   await page.locator("#hidden span").evaluate((element) => {
     element.className = "";
@@ -406,4 +409,48 @@ test("viewport changes and manual rescans refresh CSS visibility", async ({
     id,
   );
   await expect(page.locator("#inline a")).toHaveCount(0);
+});
+
+test("supported website style: CubingCheatSheet detects moves in anchors without nesting", async ({
+  page,
+  context,
+}) => {
+  const style = websiteStyles.cubingCheatSheet;
+  await context.route(style.url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: style.html,
+    }),
+  );
+  await page.goto(style.url);
+  await expect(page.locator(".cubelab-link")).toHaveCount(style.expectedLinks);
+  await expect(page.locator("a a.cubelab-link")).toHaveCount(0);
+  const links = page.locator(".cubelab-link");
+  const firstHref = await links.first().getAttribute("href");
+  const params = new URLSearchParams(new URL(firstHref).hash.slice(1));
+  expect(params.get("size")).toBe(String(style.expectedSize));
+  expect(params.get("moves")).toContain("2-4Fw'");
+});
+
+test("supported website style: OnlineCube detects spaceless moves and handles button host", async ({
+  page,
+  context,
+}) => {
+  const style = websiteStyles.onlineCube;
+  await context.route(style.url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: style.html,
+    }),
+  );
+  await page.goto(style.url);
+  await expect(page.locator(".cubelab-link")).toHaveCount(style.expectedLinks);
+  await expect(page.locator("a[data-move] a.cubelab-link")).toHaveCount(0);
+  const urls = await page
+    .locator(".cubelab-link")
+    .evaluateAll((links) => links.map((link) => link.href));
+  const moves = urls.map((url) =>
+    new URLSearchParams(new URL(url).hash.slice(1)).get("moves"),
+  );
+  expect(moves).toEqual(style.expectedMoves);
 });
