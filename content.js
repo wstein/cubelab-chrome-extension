@@ -6,7 +6,7 @@
   const BLOCK =
     "p,li,td,th,pre,div,section,article,h1,h2,h3,h4,h5,h6,dd,dt,figcaption,body";
   const SKIP =
-    'script,style,noscript,textarea,input,select,button,a,svg,canvas,math,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[hidden],[aria-hidden="true"],.cubelab-link';
+    'script,style,noscript,textarea,input,select,button,a:not([href]),svg,canvas,math,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[hidden],[aria-hidden="true"],.cubelab-link';
   const WIDGET =
     "[data-alg],[data-algorithm],[data-roofpig],twisty-player[alg]";
   const CONTEXT = "head,h1,h2,h3,h4,style,link[rel=stylesheet]";
@@ -167,15 +167,36 @@
     const blocks = new Map(),
       widgets = new Set();
     let visited = 0,
-      previousBlock = null;
+      previousBlock = null,
+      previousElement = null;
     function append(node, value) {
       const block = elementOf(node)?.closest(BLOCK);
       if (!block) return;
       if (!blocks.has(block)) blocks.set(block, { text: "", parts: [] });
       const item = blocks.get(block);
-      if (previousBlock !== block && item.parts.length) item.text += "\0";
+      if (previousBlock !== block) {
+        if (item.parts.length) item.text += "\0";
+        previousElement = null;
+      }
       previousBlock = block;
       if (item.text.length > 32000) return;
+      const parent = elementOf(node);
+      if (
+        previousElement &&
+        parent &&
+        previousElement !== parent &&
+        !previousElement.contains(parent) &&
+        !parent.contains(previousElement) &&
+        !parent.closest("sub, sup") &&
+        !previousElement.closest("sub, sup") &&
+        item.text.length &&
+        !/\s$/.test(item.text) &&
+        !/^\s/.test(value) &&
+        item.text.length < 32000
+      ) {
+        item.text += " ";
+      }
+      previousElement = parent;
       value = value.slice(0, 32001 - item.text.length);
       item.parts.push({
         node,
@@ -187,6 +208,7 @@
     for (const root of roots) {
       let node = root;
       previousBlock = null;
+      previousElement = null;
       while (node && visited++ < 100000) {
         let descend = true;
         if (ownedLinks.has(node)) descend = false;
@@ -261,12 +283,18 @@
       if (!part) continue;
       const link = makeLink(match);
       if (!link) continue;
-      const left = part.node,
-        offset = match.end - part.start;
-      // Inserting at a text boundary needs no split and creates no empty nodes.
-      const right = offset < left.length ? left.splitText(offset) : null;
-      left.after(link);
-      record.links.push({ link, left, right });
+      const host = part.node.parentElement?.closest('a,button,[role="button"]');
+      if (host && block.contains(host)) {
+        host.after(link);
+        record.links.push({ link, left: part.node, right: null });
+      } else {
+        const left = part.node,
+          offset = match.end - part.start;
+        // Inserting at a text boundary needs no split and creates no empty nodes.
+        const right = offset < left.length ? left.splitText(offset) : null;
+        left.after(link);
+        record.links.push({ link, left, right });
+      }
     }
   }
   function widgetMatch(widget, page, view) {
