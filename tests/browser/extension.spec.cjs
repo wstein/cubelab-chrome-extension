@@ -32,14 +32,21 @@ test("floating actions preserve Ruwix-style move rows", async ({
 }) => {
   await page.goto(site);
   await page.evaluate(() => {
-    document.body.innerHTML = `<h1>3x3 patterns</h1><div class="imageWithAlairas"><span id="rots"><span>L</span> <span>F'</span> <span id="hover-move">L'</span> <span>D'</span> <span>L'</span> <span>D</span> <span>F</span></span></div>`;
+    document.body.innerHTML = `<h1>3x3 patterns</h1><div class="imageWithAlairas"><span class="rots" id="rots"><span>L</span> <span>F'</span> <span id="hover-move">L'</span> <span>D'</span> <span>L'</span> <span>D</span> <span>F</span></span></div>`;
   });
+  const row = page.locator("#rots");
+  const compactBadge = page.locator(".cubelab-link--compact");
+  await expect(compactBadge).toHaveCount(1);
+  await expect(row.locator(".cubelab-link")).toHaveCount(0);
+  expect(
+    await row.evaluate((element) => element.nextElementSibling?.className),
+  ).toContain("cubelab-link");
+
   const options = await openUI(context, extensionId, "options");
   await options.locator("#badgeStyle").selectOption("floating");
   await options.locator("#save").click();
   await expect(options.locator("#status")).toHaveText("Settings saved.");
 
-  const row = page.locator("#rots");
   const badge = page.locator(".cubelab-link--floating");
   await expect(badge).toHaveCount(1);
   await expect(row.locator(".cubelab-link")).toHaveCount(0);

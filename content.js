@@ -366,6 +366,7 @@
       settings.movesTemplate,
       settings.algTemplate,
       settings.scheme,
+      settings.badgeStyle,
     ]);
   }
   function recordValid(record, key, owner) {
@@ -409,7 +410,13 @@
         record.links.push({ link, left: null, right: null });
         continue;
       }
-      const host = part.node.parentElement?.closest('a,button,[role="button"]');
+      // Ruwix renders each move as a fixed-size child of `.rots`. Keep the
+      // decoration beside that row: inserting it into the final move changes
+      // the inline-block baseline and lifts its sprite. Interactive hosts take
+      // precedence so we never create a link inside another link or button.
+      const parent = part.node.parentElement;
+      const host =
+        parent?.closest('a,button,[role="button"]') || parent?.closest(".rots");
       if (host && block.contains(host)) {
         host.after(link);
         record.links.push({ link, left: part.node, right: null });

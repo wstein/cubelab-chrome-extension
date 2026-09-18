@@ -259,10 +259,25 @@ test("classic badge style retains its visible label", async (t) => {
   assert.ok(badge.classList.contains("cubelab-link--classic"));
 });
 
+test("compact badges are siblings of Ruwix rendered move rows", async (t) => {
+  const source = "L F' L' D' L' D F";
+  const x = await setup(
+    `<div class="imageWithAlairas"><span class="rots" id="rots"><span>${source.split(" ").join("</span> <span>")}</span></span></div>`,
+    {},
+    "https://ruwix.com/the-rubiks-cube/rubiks-cube-patterns-algorithms/",
+  );
+  t.after(() => x.dom.window.close());
+  const [badge] = links(x);
+  const row = x.doc.getElementById("rots");
+  assert.equal(row.textContent, source);
+  assert.equal(row.querySelector(".cubelab-link"), null);
+  assert.equal(row.nextElementSibling, badge);
+});
+
 test("floating actions stay outside visual move rows", async (t) => {
   const source = "L F' L' D' L' D F";
   const x = await setup(
-    `<div class="imageWithAlairas"><span id="rots"><span>${source.split(" ").join("</span> <span>")}</span></span></div>`,
+    `<div class="imageWithAlairas"><span class="rots" id="rots"><span>${source.split(" ").join("</span> <span>")}</span></span></div>`,
     { badgeStyle: "floating" },
     "https://ruwix.com/the-rubiks-cube/rubiks-cube-patterns-algorithms/",
   );
