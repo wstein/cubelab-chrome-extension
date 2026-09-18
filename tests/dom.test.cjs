@@ -226,6 +226,17 @@ test("widget badges are stable, updated, and removed with their owners", async (
   assert.equal(x.status().count, 0);
 });
 
+test("attribute-backed gallery badges are outside clipped cards", async (t) => {
+  const x = await setup(
+    '<style>.card { overflow: hidden; height: 1px }</style><div class="card" data-alg="R U F">Pattern</div>',
+  );
+  t.after(() => x.dom.window.close());
+  const card = x.doc.querySelector(".card");
+  const [badge] = links(x);
+  assert.equal(card.nextElementSibling, badge);
+  assert.equal(card.contains(badge), false);
+});
+
 test("removed badges are repaired and the page cap refills after removals", async (t) => {
   const x = await setup("<p>R U F</p>".repeat(502));
   t.after(() => x.dom.window.close());

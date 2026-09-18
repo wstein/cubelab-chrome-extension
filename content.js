@@ -454,8 +454,7 @@
         if (match && ownedLinks.size < 500) {
           const link = makeLink(match);
           if (!link) continue;
-          if (widget.tagName === "TWISTY-PLAYER") widget.after(link);
-          else widget.append(link);
+          widget.after(link);
           widgetRecords.set(widget, { key, links: [{ link }] });
         }
       }

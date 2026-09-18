@@ -7,7 +7,7 @@ Runtime detection covers the official URL, standard `application-name=CubeLab`
 metadata, and the complete current converter shell. The structural fallback
 requires three CubeLab-specific descendants and does not rely on title text.
 Mutation handling removes stale badges if an SPA mounts the marker later.
-Verification: formatter, lint, 90 unit/DOM tests and twelve Chromium tests pass.
+Verification: formatter, lint, 92 unit/DOM tests and thirteen Chromium tests pass.
 The deployed page inspected on 2026-09-17 did not yet include application-name
 metadata; adding the documented meta tag upstream is the preferred long-term
 contract.

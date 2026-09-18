@@ -2,6 +2,28 @@ const { test, expect } = require("./fixtures.cjs");
 const numberedSse = require("../fixtures/numbered-sse.cjs");
 const websiteStyles = require("../fixtures/website-styles.cjs");
 
+test("attribute-backed gallery badges are siblings of clipped cards", async ({
+  page,
+  site,
+}) => {
+  await page.goto(site);
+  await page.evaluate(() => {
+    document.body.innerHTML =
+      '<h1>3x3 patterns</h1><div class="card" data-alg="R U F">Pattern</div>';
+    document.head.insertAdjacentHTML(
+      "beforeend",
+      "<style>.card { height: 1px; overflow: hidden }</style>",
+    );
+  });
+  const card = page.locator(".card");
+  const badge = page.locator(".cubelab-link");
+  await expect(badge).toHaveCount(1);
+  await expect(card.locator(".cubelab-link")).toHaveCount(0);
+  expect(
+    await card.evaluate((element) => element.nextElementSibling?.className),
+  ).toContain("cubelab-link");
+});
+
 test("CubeLab metadata and converter shell suppress self-linking", async ({
   page,
   context,
