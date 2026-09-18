@@ -5,6 +5,7 @@
     enabled: true,
     disabledHosts: [],
     minMoves: 3,
+    badgeStyle: "compact",
     sitePreferences: {},
     lowercaseMode: "Wide",
     scheme: "Western",

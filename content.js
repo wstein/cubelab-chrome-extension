@@ -96,7 +96,7 @@
   }
   function makeLink(match) {
     const link = document.createElement("a");
-    link.className = "cubelab-link";
+    link.className = `cubelab-link cubelab-link--${settings.badgeStyle}`;
     try {
       link.href = D.makeURL(match, settings);
     } catch {
@@ -123,9 +123,10 @@
       "M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z",
     );
     icon.append(path);
-    link.append(icon, `CubeLab · ${label}`);
+    link.append(icon);
+    if (settings.badgeStyle === "classic") link.append(`CubeLab · ${label}`);
     link.title = `Open ${(match.source || match.notation).slice(0, 300)} in CubeLab`;
-    link.setAttribute("aria-label", link.title);
+    link.setAttribute("aria-label", `Open ${label} in CubeLab`);
     link.addEventListener("click", (event) => event.stopPropagation());
     ownedLinks.add(link);
     return link;

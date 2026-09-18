@@ -97,6 +97,8 @@ See [COMPATIBILITY.md](COMPATIBILITY.md) for the supplied site checklist and act
 
 The generic detector scans visible top-level document text, including inline markup and newly inserted content. Adapters handle `data-alg`, `data-algorithm`, Roofpig `data-roofpig`, and `<twisty-player alg>` attributes. Attribute-backed widget badges are placed beside their widgets, so fixed-size or clipped gallery cards keep the link visible. Editable fields, existing links, buttons, hidden regions, scripts, SVG and canvas are excluded. Badge clicks do not bubble into gallery tile handlers.
 
+Automatic links use a compact external-link icon by default, with an accessible label and tooltip. Select **Full label** in Settings when explicit inline text is preferable.
+
 Linked notation is scanned as its own candidate, preventing nearby citations or prose from invalidating an algorithm inside the link.
 
 Jaap notation uses face-relative `s` (slice), `a` (anti-slice), `m` (middle), and `c` (whole-cube) suffixes. It is validated internally using the definitions on [Jaap's notation page](https://www.jaapsch.net/puzzles/symmetr1.htm#notation), but its original spelling is delegated unchanged. The adjacent `(12f*)` and `(18q*)` move-count annotations used on the symmetry pages are excluded from the destination.
@@ -152,7 +154,7 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 97 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 98 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 98.33%. This gate covers

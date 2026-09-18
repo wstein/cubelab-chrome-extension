@@ -6,7 +6,13 @@
     ...(await chrome.storage.local.get("settings")).settings,
   };
   function show() {
-    for (const key of ["minMoves", "movesTemplate", "algTemplate", "scheme"])
+    for (const key of [
+      "minMoves",
+      "movesTemplate",
+      "algTemplate",
+      "scheme",
+      "badgeStyle",
+    ])
       $(key).value = settings[key];
   }
   show();
@@ -14,6 +20,7 @@
     try {
       const next = {
         scheme: $("scheme").value,
+        badgeStyle: $("badgeStyle").value,
         minMoves: Number($("minMoves").value),
         movesTemplate: $("movesTemplate").value.trim(),
         algTemplate: $("algTemplate").value.trim(),

@@ -27,3 +27,15 @@
   vertical-align: -0.12em !important;
   fill: currentColor !important;
 }
+.cubelab-link--compact.cubelab-link {
+  margin: 0 0.18em !important;
+  padding: 0.1em 0.25em !important;
+  border-radius: 50% !important;
+  line-height: 1 !important;
+}
+.cubelab-link--compact .cubelab-link-icon {
+  width: 0.82em !important;
+  height: 0.82em !important;
+  margin: 0 !important;
+  vertical-align: 0 !important;
+}

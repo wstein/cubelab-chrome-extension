@@ -246,7 +246,17 @@ test("badges use a decorative external-link SVG instead of a text glyph", async 
   assert.equal(icon.getAttribute("aria-hidden"), "true");
   assert.equal(icon.getAttribute("focusable"), "false");
   assert.equal(icon.getAttribute("viewBox"), "0 0 24 24");
+  assert.equal(badge.textContent, "");
+  assert.equal(badge.getAttribute("aria-label"), "Open 3×3 moves in CubeLab");
+  assert.ok(badge.classList.contains("cubelab-link--compact"));
+});
+
+test("classic badge style retains its visible label", async (t) => {
+  const x = await setup("<p>R U F</p>", { badgeStyle: "classic" });
+  t.after(() => x.dom.window.close());
+  const [badge] = links(x);
   assert.equal(badge.textContent, "CubeLab · 3×3 moves");
+  assert.ok(badge.classList.contains("cubelab-link--classic"));
 });
 
 test("Jaap links preserve anchor notation and exclude move-count annotations", async (t) => {

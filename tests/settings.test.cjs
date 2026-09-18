@@ -40,10 +40,12 @@ test("concurrent settings patches preserve global, host and same-host fields", a
     }),
     store.update({ type: "site", host: "other.example", patch: { size: 5 } }),
     store.update({ type: "global", patch: { scheme: "Japanese" } }),
+    store.update({ type: "global", patch: { badgeStyle: "classic" } }),
   ]);
   const { settings } = await storage.get();
   assert.equal(settings.enabled, false);
   assert.equal(settings.scheme, "Japanese");
+  assert.equal(settings.badgeStyle, "classic");
   assert.deepEqual(settings.disabledHosts, ["example.com"]);
   assert.deepEqual(settings.sitePreferences["example.com"], {
     size: 4,
@@ -79,6 +81,7 @@ test("invalid patches never change stored settings", async () => {
   const { store, storage } = storageHarness();
   for (const change of [
     { type: "global", patch: { minMoves: 0 } },
+    { type: "global", patch: { badgeStyle: "floating" } },
     { type: "global", patch: { movesTemplate: "javascript:{notation}" } },
     { type: "global", patch: { algTemplate: "https://example.com/" } },
     { type: "site", host: "", patch: { size: 3 } },

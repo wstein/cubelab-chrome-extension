@@ -125,7 +125,10 @@ test("Revenge page delegates grouped SSE unchanged through navigation and tester
   await page.goto(url);
   const badge = page.locator("#algorithm .cubelab-link");
   await expect(badge).toHaveCount(1);
-  await expect(badge).toContainText("4×4 SSE moves");
+  await expect(badge).toHaveAttribute(
+    "aria-label",
+    "Open 4×4 SSE moves in CubeLab",
+  );
   expect(
     await page
       .locator("#algorithm")
@@ -164,7 +167,10 @@ test("numbered SSE cycles navigate intact to size-aware Setup", async ({
   }, numberedSse);
   const badge = page.locator("#cycles .cubelab-link");
   await expect(badge).toHaveCount(1);
-  await expect(badge).toHaveText("CubeLab · 5×5 SSE cycles");
+  await expect(badge).toHaveAttribute(
+    "aria-label",
+    "Open 5×5 SSE cycles in CubeLab",
+  );
   await expect(badge.locator("svg.cubelab-link-icon")).toHaveAttribute(
     "aria-hidden",
     "true",
@@ -260,7 +266,10 @@ test("SSE page links and tester preserve the intended cube size", async ({
   }, sample);
   const badge = page.locator("#sse .cubelab-link");
   await expect(badge).toHaveCount(1);
-  await expect(badge).toContainText("5×5 SSE moves");
+  await expect(badge).toHaveAttribute(
+    "aria-label",
+    "Open 5×5 SSE moves in CubeLab",
+  );
   const params = new URLSearchParams(
     new URL(await badge.getAttribute("href")).hash.slice(1),
   );
