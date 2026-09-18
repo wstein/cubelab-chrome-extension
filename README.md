@@ -40,6 +40,7 @@ text or the tester input. Parsing below is only for detection and metadata.
 | `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3 and 5×5             |
 | `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Validate with a 2,000-move expansion limit; send original groups            |
 | Ruwix `F₂'` or actual HTML `<sub>2</sub>`                       | Preserve subscript notation (`<sub>` is extracted as Unicode)               |
+| Jaap `Rs`, `Ra`, `Rm`, `Rc`, and `(sequence)2`                  | Validate Jaap's slice/anti-slice notation; delegate the original expression |
 | SSE 2×2–5×5, including `WR`, `T3B`, `N2-3R`, and `S2-3R`        | Preserve the original expression, grouping and spelling; send `dialect=Sse` |
 | SSE / Singmaster / basic ACube cycles                           | Preserve cycles and orientation signs; use state input                      |
 | URFDLB strings, 24/54/96/150 facelets                           | Check counts, infer size, preserve face order                               |
@@ -96,6 +97,8 @@ See [COMPATIBILITY.md](COMPATIBILITY.md) for the supplied site checklist and act
 
 The generic detector scans visible top-level document text, including inline markup and newly inserted content. Adapters handle `data-alg`, `data-algorithm`, Roofpig `data-roofpig`, and `<twisty-player alg>` attributes. Attribute-backed widget badges are placed beside their widgets, so fixed-size or clipped gallery cards keep the link visible. Editable fields, existing links, buttons, hidden regions, scripts, SVG and canvas are excluded. Badge clicks do not bubble into gallery tile handlers.
 
+Jaap notation uses face-relative `s` (slice), `a` (anti-slice), `m` (middle), and `c` (whole-cube) suffixes. It is validated internally using the definitions on [Jaap's notation page](https://www.jaapsch.net/puzzles/symmetr1.htm#notation), but its original spelling is delegated unchanged.
+
 Limitations: no OCR, PDF viewer, canvas extraction, closed shadow DOM, cross-origin frames, video-only tutorials, or automatic reading of user input fields. Recognition is deliberately incomplete: NISS, arbitrary solver constraints, camera/parallel Roofpig syntax, named macros, custom colour alphabets, and some notation dialects need the selection fallback. A page need not contain detectable algorithms just because it is a cubing site. Long blocks (over 32,000 characters), scans beyond 100,000 nodes, and links beyond 500 per page are capped. Group expansion is bounded to avoid pathological input.
 
 Text and child-node updates rescan the affected block or subtree. Unchanged
@@ -147,7 +150,7 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 93 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 94 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 98.33%. This gate covers

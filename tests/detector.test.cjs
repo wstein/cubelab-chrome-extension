@@ -318,6 +318,29 @@ test("numbered prose steps do not absorb preceding algorithms as SSE", () => {
   );
 });
 
+test("Jaap slice, anti-slice, middle and cube moves retain their source", () => {
+  const source = "F2 R2 Ua' (R2 F2)2 Ua F2 R2";
+  const parsed = D.parseJaap(source);
+  assert.equal(parsed.moves.join(" "), "F2 R2 U' D' R2 F2 R2 F2 U D F2 R2");
+  for (const [notation, expected] of [
+    ["Rs Ra' Rm Rc", "R L' R' L' M' x"],
+    ["Ls La' Lm Lc", "L R' L' R' M x'"],
+    ["Us Ua' Um Uc", "U D' U' D' E' y"],
+    ["Ds Da' Dm Dc", "D U' D' U' E y'"],
+    ["Fs Fa' Fm Fc", "F B' F' B' S z"],
+    ["Bs Ba' Bm Bc", "B F' B' F' S' z'"],
+    ["Rs' Ra2 Rm2 Rc'", "R' L R2 L2 M2 x'"],
+  ])
+    assert.equal(D.parseJaap(notation).moves.join(" "), expected, notation);
+  const [result] = D.detect(`Pattern: ${source}.`, { cubeContext: true });
+  assert.equal(result.format, "Jaap");
+  assert.equal(result.source, source);
+  assert.equal(
+    new URLSearchParams(new URL(D.makeURL(result)).hash.slice(1)).get("moves"),
+    source,
+  );
+});
+
 test("invalid repeated groups are not truncated to permutation cycles", () => {
   for (const expression of [
     "(RU RF)0",

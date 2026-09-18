@@ -26,6 +26,81 @@
     /^(?:[CTNVMWS](?:[1-5](?:-[1-5])?)?)?[URFDLB](?:2['-]?|['-]2|3|['-])?/;
   const sseMarker = /[CTNVMWS](?:\d+(?:-\d+)?)?[URFDLB]/;
   const opposite = { R: "L", L: "R", U: "D", D: "U", F: "B", B: "F" };
+  const jaapMarker = /[URFDLB][samc](?:2|['’‘′´`]|3)?/;
+  const jaapParts = {
+    R: {
+      s: [
+        ["R", 1],
+        ["L", -1],
+      ],
+      a: [
+        ["R", 1],
+        ["L", 1],
+      ],
+      m: [["M", -1]],
+      c: [["x", 1]],
+    },
+    L: {
+      s: [
+        ["L", 1],
+        ["R", -1],
+      ],
+      a: [
+        ["L", 1],
+        ["R", 1],
+      ],
+      m: [["M", 1]],
+      c: [["x", -1]],
+    },
+    U: {
+      s: [
+        ["U", 1],
+        ["D", -1],
+      ],
+      a: [
+        ["U", 1],
+        ["D", 1],
+      ],
+      m: [["E", -1]],
+      c: [["y", 1]],
+    },
+    D: {
+      s: [
+        ["D", 1],
+        ["U", -1],
+      ],
+      a: [
+        ["D", 1],
+        ["U", 1],
+      ],
+      m: [["E", 1]],
+      c: [["y", -1]],
+    },
+    F: {
+      s: [
+        ["F", 1],
+        ["B", -1],
+      ],
+      a: [
+        ["F", 1],
+        ["B", 1],
+      ],
+      m: [["S", 1]],
+      c: [["z", 1]],
+    },
+    B: {
+      s: [
+        ["B", 1],
+        ["F", -1],
+      ],
+      a: [
+        ["B", 1],
+        ["F", 1],
+      ],
+      m: [["S", -1]],
+      c: [["z", -1]],
+    },
+  };
 
   function sseMove(token, size) {
     const [, family = "", first, last, face, suffix = ""] = token.match(
@@ -85,7 +160,12 @@
     }
     return [range(1, 1)];
   }
-  function parseExpression(source, sseSize = null, modernSize = null) {
+  function parseExpression(
+    source,
+    sseSize = null,
+    modernSize = null,
+    jaap = false,
+  ) {
     if (typeof source !== "string" || !source || source.length > 8000)
       return null;
     const s = sseSize
@@ -145,11 +225,34 @@
           if (part.length * count > MAX) throw Error("size");
           part = Array.from({ length: count }, () => part).flat();
         } else {
-          const m = s.slice(pos).match(sseSize ? sseMoveRE : moveRE);
+          const m = s
+            .slice(pos)
+            .match(
+              sseSize
+                ? sseMoveRE
+                : jaap
+                  ? /^[URFDLB](?:[samc])?(?:2|'|3)?/
+                  : moveRE,
+            );
           if (!m) throw Error("token");
           pos += m[0].length;
           if (sseSize) {
             part = sseMove(m[0], sseSize);
+          } else if (jaap) {
+            const [, face, family = "", suffix = ""] = m[0].match(
+              /^([URFDLB])([samc])?(.*)$/,
+            );
+            const turns =
+              suffix === "2" ? 2 : suffix === "'" || suffix === "3" ? -1 : 1;
+            part = (family ? jaapParts[face][family] : [[face, 1]]).map(
+              ([base, direction]) => {
+                const amount = turns * direction;
+                return (
+                  base + (Math.abs(amount) === 2 ? "2" : amount < 0 ? "'" : "")
+                );
+              },
+            );
+            if (family === "m") minSize = Math.max(minSize, 3);
           } else {
             let move = m[0]
               .replace(
@@ -217,6 +320,9 @@
       ? parseExpression(source, size)
       : null;
     return parsed ? { moves: parsed.moves, size } : null;
+  }
+  function parseJaap(source) {
+    return parseExpression(source, null, null, true);
   }
   function facelets(source) {
     const compact = source.replace(/\s/g, "");
@@ -440,6 +546,18 @@
       }
       return null;
     }
+    if (jaapMarker.test(s) || options.dialect === "Jaap") {
+      const parsed = parseJaap(s);
+      if (!parsed || parsed.moves.length < (options.minMoves ?? 3)) return null;
+      return {
+        kind: "moves",
+        format: "Jaap",
+        notation: parsed.moves.join(" "),
+        size: 3,
+        minSize: parsed.minSize,
+        confidence: "high",
+      };
+    }
     const parsed = parseMoves(s, options.size);
     if (
       parsed &&
@@ -540,7 +658,7 @@
     if (whole) add(text.indexOf(trim), text.indexOf(trim) + trim.length, whole);
     // Candidate runs bounded by prose; unmatched syntax is rejected, not repaired.
     const run =
-      /(?<![A-Za-z0-9])(?:[2-5](?:-[2-5])?[urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
+      /(?<![A-Za-z0-9])(?:[2-5](?:-[2-5])?[urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbsamcCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
       // A numbered prose list can begin with an SSE family letter ("1. Write"),
@@ -610,6 +728,7 @@
     normalize,
     parseMoves,
     parseSse,
+    parseJaap,
     facelets,
     cubieState,
     coordinates,
