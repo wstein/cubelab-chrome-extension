@@ -37,6 +37,8 @@ test("floating actions preserve Ruwix-style move rows", async ({
   const row = page.locator("#rots");
   const compactBadge = page.locator(".cubelab-link--compact");
   await expect(compactBadge).toHaveCount(1);
+  await expect(compactBadge).toHaveCSS("background-color", "rgb(21, 128, 61)");
+  await expect(compactBadge).toHaveCSS("color", "rgb(255, 255, 255)");
   await expect(row.locator(".cubelab-link")).toHaveCount(0);
   expect(
     await row.evaluate((element) => element.nextElementSibling?.className),

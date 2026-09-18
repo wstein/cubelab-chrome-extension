@@ -30,8 +30,19 @@
 .cubelab-link--compact.cubelab-link {
   margin: 0 0.18em !important;
   padding: 0.1em 0.25em !important;
+  border: none !important;
   border-radius: 50% !important;
+  background: #15803d !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%) !important;
   line-height: 1 !important;
+  transition:
+    background 120ms ease,
+    transform 120ms ease !important;
+}
+.cubelab-link--compact.cubelab-link:hover {
+  background: #166534 !important;
+  transform: scale(1.08) !important;
 }
 .cubelab-link--compact .cubelab-link-icon {
   width: 0.82em !important;

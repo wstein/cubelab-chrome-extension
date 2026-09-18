@@ -11,6 +11,9 @@ accessible label as the other modes. DOM and Chromium regressions cover the
 Ruwix-style row in both compact and floating modes; the Professor Cube regression now uses the reported
 `/rubik/professor/R300.02.html` route. Changing the appearance applies to
 existing page badges without requiring a reload.
+Compact icons use a solid green fill with a white glyph so they remain distinct
+on light, patterned reference pages; full and floating labels retain their
+lighter treatment.
 
 ## CubeLab self-exclusion
 

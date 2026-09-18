@@ -97,7 +97,7 @@ See [COMPATIBILITY.md](COMPATIBILITY.md) for the supplied site checklist and act
 
 The generic detector scans visible top-level document text, including inline markup and newly inserted content. Adapters handle `data-alg`, `data-algorithm`, Roofpig `data-roofpig`, and `<twisty-player alg>` attributes. Attribute-backed widget badges are placed beside their widgets, so fixed-size or clipped gallery cards keep the link visible. Editable fields, existing links, buttons, hidden regions, scripts, SVG and canvas are excluded. Badge clicks do not bubble into gallery tile handlers.
 
-Automatic links use a compact external-link icon by default, with an accessible label and tooltip. Rendered move rows such as Ruwix's are linked beside the entire row, never inside the final move icon. Select **Floating action on hover** when a page's algorithm layout must remain completely untouched: the action is positioned outside the page flow and follows the hovered notation. Select **Full label** when explicit inline text is preferable.
+Automatic links use a compact, high-contrast green external-link icon by default, with an accessible label and tooltip. Rendered move rows such as Ruwix's are linked beside the entire row, never inside the final move icon. Select **Floating action on hover** when a page's algorithm layout must remain completely untouched: the action is positioned outside the page flow and follows the hovered notation. Select **Full label** when explicit inline text is preferable.
 
 Linked notation is scanned as its own candidate, preventing nearby citations or prose from invalidating an algorithm inside the link.
 
