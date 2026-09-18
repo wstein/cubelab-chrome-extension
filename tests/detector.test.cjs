@@ -341,6 +341,27 @@ test("Jaap slice, anti-slice, middle and cube moves retain their source", () => 
   );
 });
 
+test("Jaap move-count annotations do not fragment complete algorithms", () => {
+  const jaap = "F2 R2 Ua' (R2 F2)2 Ua F2 R2";
+  const standard = "F2 R2 U L2 U' R2 B2 R2 D F2 D'";
+  for (const [source, metric] of [
+    [jaap, "(12f*)"],
+    [standard, "(10f*, 18q*)"],
+  ]) {
+    const found = D.detect(`${source} ${metric}`, { cubeContext: true });
+    assert.deepEqual(
+      found.map((result) => result.source),
+      [source],
+    );
+    assert.equal(
+      new URLSearchParams(new URL(D.makeURL(found[0])).hash.slice(1)).get(
+        "moves",
+      ),
+      source,
+    );
+  }
+});
+
 test("invalid repeated groups are not truncated to permutation cycles", () => {
   for (const expression of [
     "(RU RF)0",

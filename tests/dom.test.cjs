@@ -249,6 +249,22 @@ test("badges use a decorative external-link SVG instead of a text glyph", async 
   assert.equal(badge.textContent, "CubeLab · 3×3 moves");
 });
 
+test("Jaap links preserve anchor notation and exclude move-count annotations", async (t) => {
+  const source = "F2 R2 Ua' (R2 F2)2 Ua F2 R2";
+  const x = await setup(
+    `<ol><li><a id="jaap" href="javascript:showpat()">${source}</a> (12f*)</li></ol>`,
+  );
+  t.after(() => x.dom.window.close());
+  const anchor = x.doc.getElementById("jaap");
+  const badge = anchor.nextElementSibling;
+  assert.ok(badge.classList.contains("cubelab-link"));
+  assert.equal(anchor.querySelector(".cubelab-link"), null);
+  assert.equal(
+    new URLSearchParams(new URL(badge.href).hash.slice(1)).get("moves"),
+    source,
+  );
+});
+
 test("removed badges are repaired and the page cap refills after removals", async (t) => {
   const x = await setup("<p>R U F</p>".repeat(502));
   t.after(() => x.dom.window.close());

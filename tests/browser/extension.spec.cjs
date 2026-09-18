@@ -24,6 +24,26 @@ test("attribute-backed gallery badges are siblings of clipped cards", async ({
   ).toContain("cubelab-link");
 });
 
+test("Jaap anchors keep their complete source without move-count metadata", async ({
+  page,
+  site,
+}) => {
+  const source = "F2 R2 Ua' (R2 F2)2 Ua F2 R2";
+  await page.goto(site);
+  await page.evaluate((notation) => {
+    document.body.innerHTML = `<h1>Rubik's Cube patterns</h1><ol><li><a id="jaap" href="javascript:showpat()">${notation}</a> (12f*)</li></ol>`;
+  }, source);
+  const anchor = page.locator("#jaap");
+  const badge = page.locator(".cubelab-link");
+  await expect(badge).toHaveCount(1);
+  await expect(anchor.locator(".cubelab-link")).toHaveCount(0);
+  expect(
+    new URLSearchParams(
+      new URL(await badge.getAttribute("href")).hash.slice(1),
+    ).get("moves"),
+  ).toBe(source);
+});
+
 test("CubeLab metadata and converter shell suppress self-linking", async ({
   page,
   context,
