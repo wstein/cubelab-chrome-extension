@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CubeLab Linker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detect cube algorithms, permutation cycles and facelet states and add CubeLab links.",
   "minimum_chrome_version": "109",
   "permissions": ["storage", "contextMenus", "activeTab"],
