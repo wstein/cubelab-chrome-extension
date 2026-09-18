@@ -304,6 +304,20 @@ test("compact repeated groups retain their full expression and offsets", () => {
   }
 });
 
+test("numbered prose steps do not absorb preceding algorithms as SSE", () => {
+  const algorithms = [
+    "U F B' L2 U2 L2 F' B U2 L2 U",
+    "U L2 U2 B F' L2 U2 L2 B' F U",
+    "U' L2 U2 B' F L2 U2 L2 B F' U'",
+  ];
+  const text = `${algorithms[0]}\n1. Write it backwards:\n${algorithms[1]}\n2. Then replace the moves:\n${algorithms[2]}\n➤ done.`;
+  const found = D.detect(text, { cubeContext: true });
+  assert.deepEqual(
+    found.map((result) => result.source),
+    algorithms,
+  );
+});
+
 test("invalid repeated groups are not truncated to permutation cycles", () => {
   for (const expression of [
     "(RU RF)0",

@@ -543,6 +543,9 @@
       /(?<![A-Za-z0-9])(?:[2-5](?:-[2-5])?[urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
+      // A numbered prose list can begin with an SSE family letter ("1. Write"),
+      // which otherwise gets absorbed after an algorithm on the preceding line.
+      raw = raw.replace(/\s+\d+\.\s*[CTNVMWS]?$/, "").trimEnd();
       // Metric suffixes in Pretty Patterns are deliberately outside the notation.
       raw = raw.replace(/\s+\(\d+\*?\)?\s*$/, "").trimEnd();
       raw = raw.replace(/[,;:!?.…]+$/, "").trimEnd();
