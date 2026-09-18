@@ -208,7 +208,8 @@
       widgets = new Set();
     let visited = 0,
       previousBlock = null,
-      previousElement = null;
+      previousElement = null,
+      previousLink = null;
     function append(node, value) {
       const block = elementOf(node)?.closest(BLOCK);
       if (!block) return;
@@ -217,10 +218,17 @@
       if (previousBlock !== block) {
         if (item.parts.length) item.text += "\0";
         previousElement = null;
+        previousLink = null;
       }
       previousBlock = block;
       if (item.text.length > 32000) return;
       const parent = elementOf(node);
+      const link = parent?.closest("a[href]");
+      if (previousLink !== link) {
+        if (item.text.length) item.text += "\0";
+        previousElement = null;
+      }
+      previousLink = link;
       if (
         previousElement &&
         parent &&
@@ -249,6 +257,7 @@
       let node = root;
       previousBlock = null;
       previousElement = null;
+      previousLink = null;
       while (node && visited++ < 100000) {
         let descend = true;
         if (ownedLinks.has(node)) descend = false;

@@ -44,6 +44,29 @@ test("Jaap anchors keep their complete source without move-count metadata", asyn
   ).toBe(source);
 });
 
+test("Jaap anchors remain detectable after pattern citations", async ({
+  page,
+  site,
+}) => {
+  const sources = [
+    "Rm2 Fm2 Um2",
+    "(Rs Fs)3",
+    "Ra D2 B' L2 F2 R2 Us' R' D2 Fa' D' F2 D' R2 U' F2 D'",
+  ];
+  await page.goto(site);
+  await page.evaluate((notations) => {
+    document.body.innerHTML = `<h1>Rubik's Cube patterns</h1><ol><li>The 6X pattern (a.k.a. Pons Asinorum) [p10, RCC 3.9.37]<br><a href="javascript:showpat()">${notations[0]}</a> (6f*, 12q*)<br><a href="javascript:showpat()">(Rs Fs)<sup>3</sup></a></li><li>The superflip [p3,p179,p194,p195,p205]<br><a href="javascript:showpat()">${notations[2]}</a> (20f*)</li></ol>`;
+  }, sources);
+  const badges = page.locator(".cubelab-link");
+  await expect(badges).toHaveCount(sources.length);
+  const moves = await badges.evaluateAll((links) =>
+    links.map((link) =>
+      new URLSearchParams(new URL(link.href).hash.slice(1)).get("moves"),
+    ),
+  );
+  expect(moves).toEqual(sources);
+});
+
 test("CubeLab metadata and converter shell suppress self-linking", async ({
   page,
   context,

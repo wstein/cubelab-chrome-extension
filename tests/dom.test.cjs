@@ -265,6 +265,32 @@ test("Jaap links preserve anchor notation and exclude move-count annotations", a
   );
 });
 
+test("Jaap anchors remain detectable after citation text", async (t) => {
+  const sources = [
+    "Rm2 Fm2 Um2",
+    "(Rs Fs)3",
+    "Ra D2 B' L2 F2 R2 Us' R' D2 Fa' D' F2 D' R2 U' F2 D'",
+    "R' U2 B L' F U' B D F Us L D2 F' R B' D F' U' B' Us",
+    "((Rm U)4 Rc Uc')3",
+  ];
+  const x = await setup(`
+    <ol><li>The 6X pattern (a.k.a. Pons Asinorum) [p10, RCC 3.9.37]<br>
+      <a href="javascript:showpat()">${sources[0]}</a> (6f*, 12q*)<br>
+      <a href="javascript:showpat()">(Rs Fs)<sup>3</sup></a>
+    </li><li>The superflip [p3,p179,p194,p195,p205]<br>
+      <a href="javascript:showpat()">${sources[2]}</a> (20f*)<br>
+      <a href="javascript:showpat()">${sources[3]}</a> (24q*)<br>
+      <a href="javascript:showpat()">((Rm U)<sup>4</sup> Rc Uc')<sup>3</sup></a>
+    </li></ol>`);
+  t.after(() => x.dom.window.close());
+  const badges = links(x);
+  assert.equal(badges.length, sources.length);
+  for (let i = 0; i < sources.length; i++) {
+    const params = new URLSearchParams(new URL(badges[i].href).hash.slice(1));
+    assert.equal(params.get("moves"), sources[i]);
+  }
+});
+
 test("removed badges are repaired and the page cap refills after removals", async (t) => {
   const x = await setup("<p>R U F</p>".repeat(502));
   t.after(() => x.dom.window.close());
