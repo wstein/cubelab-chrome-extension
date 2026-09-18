@@ -24,6 +24,32 @@ test("attribute-backed gallery badges are siblings of clipped cards", async ({
   ).toContain("cubelab-link");
 });
 
+test("floating actions preserve Ruwix-style move rows", async ({
+  page,
+  site,
+  context,
+  extensionId,
+}) => {
+  await page.goto(site);
+  await page.evaluate(() => {
+    document.body.innerHTML = `<h1>3x3 patterns</h1><div class="imageWithAlairas"><span id="rots"><span>L</span> <span>F'</span> <span id="hover-move">L'</span> <span>D'</span> <span>L'</span> <span>D</span> <span>F</span></span></div>`;
+  });
+  const options = await openUI(context, extensionId, "options");
+  await options.locator("#badgeStyle").selectOption("floating");
+  await options.locator("#save").click();
+  await expect(options.locator("#status")).toHaveText("Settings saved.");
+
+  const row = page.locator("#rots");
+  const badge = page.locator(".cubelab-link--floating");
+  await expect(badge).toHaveCount(1);
+  await expect(row.locator(".cubelab-link")).toHaveCount(0);
+  await expect(row).toHaveText("L F' L' D' L' D F");
+  await page.locator("#hover-move").hover();
+  await expect(badge).toHaveClass(/cubelab-link--visible/);
+  await expect(badge).toHaveCSS("position", "fixed");
+  await expect(badge).toHaveText("CubeLab · 3×3 moves");
+});
+
 test("Jaap anchors keep their complete source without move-count metadata", async ({
   page,
   site,
@@ -253,16 +279,21 @@ test("SiGN widgets and tester preserve blocks, setup and boundary layers", async
 
 test("SSE page links and tester preserve the intended cube size", async ({
   page,
-  site,
   context,
   extensionId,
 }) => {
   const sample =
     "D2 F2 L' SF2 L D' WR' D' F2 D↗ WR D' T3B TU T3B TL2 TF' TD' TL MD2 TB TU2 TL2 TF MR2 TU TF'";
-  await page.goto(site);
-  await page.evaluate((sample) => {
-    document.body.innerHTML = "<h1>Professor Cube</h1><p id='sse'></p>";
-    document.querySelector("#sse").textContent = sample;
+  const url = "https://www.randelshofer.ch/rubik/professor/R300.02.html";
+  await context.route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: '<!doctype html><title>Professor Cube</title><h1>Professor Cube</h1><p id="sse"></p>',
+    }),
+  );
+  await page.goto(url);
+  await page.locator("#sse").evaluate((element, notation) => {
+    element.textContent = notation;
   }, sample);
   const badge = page.locator("#sse .cubelab-link");
   await expect(badge).toHaveCount(1);

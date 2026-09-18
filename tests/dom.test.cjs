@@ -259,6 +259,23 @@ test("classic badge style retains its visible label", async (t) => {
   assert.ok(badge.classList.contains("cubelab-link--classic"));
 });
 
+test("floating actions stay outside visual move rows", async (t) => {
+  const source = "L F' L' D' L' D F";
+  const x = await setup(
+    `<div class="imageWithAlairas"><span id="rots"><span>${source.split(" ").join("</span> <span>")}</span></span></div>`,
+    { badgeStyle: "floating" },
+    "https://ruwix.com/the-rubiks-cube/rubiks-cube-patterns-algorithms/",
+  );
+  t.after(() => x.dom.window.close());
+  const [badge] = links(x);
+  const row = x.doc.getElementById("rots");
+  assert.equal(row.textContent, source);
+  assert.equal(row.querySelector(".cubelab-link"), null);
+  assert.equal(badge.parentElement, x.doc.body);
+  assert.ok(badge.classList.contains("cubelab-link--floating"));
+  assert.equal(badge.textContent, "CubeLab · 3×3 moves");
+});
+
 test("Jaap links preserve anchor notation and exclude move-count annotations", async (t) => {
   const source = "F2 R2 Ua' (R2 F2)2 Ua F2 R2";
   const x = await setup(

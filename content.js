@@ -12,12 +12,15 @@
   const CONTEXT = "head,h1,h2,h3,h4,style,link[rel=stylesheet]";
   const blockRecords = new Map(),
     widgetRecords = new Map(),
-    ownedLinks = new Set();
+    ownedLinks = new Set(),
+    floatingRanges = new Map();
   const dirtyRoots = new Set();
   let settings = { ...D.DEFAULTS },
     timer,
     count = 0,
     running = false,
+    activeFloating,
+    floatingTimer,
     fullScan = true;
 
   function elementOf(node) {
@@ -88,12 +91,66 @@
     for (const { link, left, right } of [...record.links].reverse()) {
       link.remove();
       ownedLinks.delete(link);
+      floatingRanges.delete(link);
       if (right && left.parentNode && left.nextSibling === right) {
         left.appendData(right.data);
         right.remove();
       }
     }
   }
+  function hideFloating() {
+    if (!activeFloating) return;
+    activeFloating.classList.remove("cubelab-link--visible");
+    activeFloating = null;
+  }
+  function positionFloating(link, rect) {
+    link.style.left = `${Math.min(rect.right + 6, innerWidth - link.offsetWidth - 4)}px`;
+    link.style.top = `${Math.max(4, rect.top - 4)}px`;
+  }
+  function showFloating(link, rect) {
+    clearTimeout(floatingTimer);
+    if (activeFloating && activeFloating !== link) hideFloating();
+    positionFloating(link, rect);
+    link.classList.add("cubelab-link--visible");
+    activeFloating = link;
+  }
+  function rectAt(range, x, y) {
+    try {
+      return [...range.getClientRects()].find(
+        (rect) =>
+          x >= rect.left &&
+          x <= rect.right &&
+          y >= rect.top &&
+          y <= rect.bottom,
+      );
+    } catch {
+      return null;
+    }
+  }
+  document.addEventListener("pointermove", (event) => {
+    if (event.target.closest(".cubelab-link--floating")) {
+      clearTimeout(floatingTimer);
+      return;
+    }
+    for (const [link, range] of floatingRanges) {
+      const rect = rectAt(range, event.clientX, event.clientY);
+      if (rect) return showFloating(link, rect);
+    }
+    clearTimeout(floatingTimer);
+    floatingTimer = setTimeout(hideFloating, 120);
+  });
+  addEventListener(
+    "scroll",
+    () => {
+      const range = activeFloating && floatingRanges.get(activeFloating);
+      if (range) {
+        const [rect] = range.getClientRects();
+        if (rect) positionFloating(activeFloating, rect);
+      }
+    },
+    true,
+  );
+  addEventListener("resize", hideFloating);
   function makeLink(match) {
     const link = document.createElement("a");
     link.className = `cubelab-link cubelab-link--${settings.badgeStyle}`;
@@ -124,7 +181,8 @@
     );
     icon.append(path);
     link.append(icon);
-    if (settings.badgeStyle === "classic") link.append(`CubeLab · ${label}`);
+    if (["classic", "floating"].includes(settings.badgeStyle))
+      link.append(`CubeLab · ${label}`);
     link.title = `Open ${(match.source || match.notation).slice(0, 300)} in CubeLab`;
     link.setAttribute("aria-label", `Open ${label} in CubeLab`);
     link.addEventListener("click", (event) => event.stopPropagation());
@@ -314,7 +372,9 @@
     return (
       record?.key === key &&
       record.complete &&
-      record.links.every(({ link }) => owner.contains(link))
+      record.links.every(
+        ({ link }) => owner.contains(link) || floatingRanges.has(link),
+      )
     );
   }
   function decorateBlock(block, item, options, key) {
@@ -333,6 +393,22 @@
       if (!part) continue;
       const link = makeLink(match);
       if (!link) continue;
+      if (settings.badgeStyle === "floating") {
+        const start = item.parts.find(
+          (p) =>
+            p.node.nodeType === 3 &&
+            p.start <= match.start &&
+            p.end >= match.start,
+        );
+        if (!start) continue;
+        const range = document.createRange();
+        range.setStart(start.node, match.start - start.start);
+        range.setEnd(part.node, match.end - part.start);
+        document.body.append(link);
+        floatingRanges.set(link, range);
+        record.links.push({ link, left: null, right: null });
+        continue;
+      }
       const host = part.node.parentElement?.closest('a,button,[role="button"]');
       if (host && block.contains(host)) {
         host.after(link);

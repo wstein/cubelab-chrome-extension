@@ -34,7 +34,8 @@
         if (
           (key === "enabled" && typeof value === "boolean") ||
           (key === "minMoves" && [2, 3, 4].includes(value)) ||
-          (key === "badgeStyle" && ["compact", "classic"].includes(value)) ||
+          (key === "badgeStyle" &&
+            ["compact", "classic", "floating"].includes(value)) ||
           (key === "scheme" && ["Western", "Japanese"].includes(value))
         )
           next[key] = value;

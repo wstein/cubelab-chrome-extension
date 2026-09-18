@@ -1,5 +1,16 @@
 # Project notes
 
+## Badge presentation modes
+
+Compact external-link icons remain the default. Settings now also offer a full
+inline label and a floating hover action. The floating action is appended outside
+the source document flow and positioned from the detected text range, so it does
+not split Ruwix move-icon rows, Jaap citation/metric lines, or Randelshofer
+tables. It remains keyboard-focusable once shown and has the same destination and
+accessible label as the other modes. DOM and Chromium regressions cover the
+Ruwix-style row; the Professor Cube regression now uses the reported
+`/rubik/professor/R300.02.html` route.
+
 ## CubeLab self-exclusion
 
 Manifest exclusion remains the cheapest guard for the official deployment.
@@ -7,7 +18,7 @@ Runtime detection covers the official URL, standard `application-name=CubeLab`
 metadata, and the complete current converter shell. The structural fallback
 requires three CubeLab-specific descendants and does not rely on title text.
 Mutation handling removes stale badges if an SPA mounts the marker later.
-Verification: formatter, lint, 98 unit/DOM tests and fifteen Chromium tests pass.
+Verification: formatter, lint, 99 unit/DOM tests and sixteen Chromium tests pass.
 The deployed page inspected on 2026-09-17 did not yet include application-name
 metadata; adding the documented meta tag upstream is the preferred long-term
 contract.

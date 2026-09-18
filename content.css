@@ -39,3 +39,19 @@
   margin: 0 !important;
   vertical-align: 0 !important;
 }
+.cubelab-link--floating.cubelab-link {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-4px) !important;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease !important;
+}
+.cubelab-link--floating.cubelab-link--visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}

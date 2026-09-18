@@ -81,7 +81,7 @@ test("invalid patches never change stored settings", async () => {
   const { store, storage } = storageHarness();
   for (const change of [
     { type: "global", patch: { minMoves: 0 } },
-    { type: "global", patch: { badgeStyle: "floating" } },
+    { type: "global", patch: { badgeStyle: "minimal" } },
     { type: "global", patch: { movesTemplate: "javascript:{notation}" } },
     { type: "global", patch: { algTemplate: "https://example.com/" } },
     { type: "site", host: "", patch: { size: 3 } },
