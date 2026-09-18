@@ -121,7 +121,11 @@ test("numbered SSE cycles navigate intact to size-aware Setup", async ({
   }, numberedSse);
   const badge = page.locator("#cycles .cubelab-link");
   await expect(badge).toHaveCount(1);
-  await expect(badge).toHaveText("↗ CubeLab · 5×5 SSE cycles");
+  await expect(badge).toHaveText("CubeLab · 5×5 SSE cycles");
+  await expect(badge.locator("svg.cubelab-link-icon")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
   expect(
     await page.locator("#cycles").evaluate((element) =>
       [...element.childNodes]

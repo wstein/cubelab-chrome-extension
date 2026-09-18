@@ -237,6 +237,18 @@ test("attribute-backed gallery badges are outside clipped cards", async (t) => {
   assert.equal(card.contains(badge), false);
 });
 
+test("badges use a decorative external-link SVG instead of a text glyph", async (t) => {
+  const x = await setup("<p>R U F</p>");
+  t.after(() => x.dom.window.close());
+  const [badge] = links(x);
+  const icon = badge.querySelector("svg.cubelab-link-icon");
+  assert.ok(icon);
+  assert.equal(icon.getAttribute("aria-hidden"), "true");
+  assert.equal(icon.getAttribute("focusable"), "false");
+  assert.equal(icon.getAttribute("viewBox"), "0 0 24 24");
+  assert.equal(badge.textContent, "CubeLab · 3×3 moves");
+});
+
 test("removed badges are repaired and the page cap refills after removals", async (t) => {
   const x = await setup("<p>R U F</p>".repeat(502));
   t.after(() => x.dom.window.close());

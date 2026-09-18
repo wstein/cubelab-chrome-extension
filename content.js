@@ -112,7 +112,18 @@
           : match.format === "SSE"
             ? `${match.size}×${match.size} SSE cycles`
             : "cycles";
-    link.textContent = `↗ CubeLab · ${label}`;
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.classList.add("cubelab-link-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.setAttribute("focusable", "false");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute(
+      "d",
+      "M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z",
+    );
+    icon.append(path);
+    link.append(icon, `CubeLab · ${label}`);
     link.title = `Open ${(match.source || match.notation).slice(0, 300)} in CubeLab`;
     link.setAttribute("aria-label", link.title);
     link.addEventListener("click", (event) => event.stopPropagation());
