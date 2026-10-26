@@ -15,6 +15,10 @@
     ownedLinks = new Set(),
     floatingRanges = new Map();
   const dirtyRoots = new Set();
+  // CubeAssembler fingerprint (FINGERPRINT.md): at most one badge, owned here.
+  let fingerprintBadge = null,
+    fingerprintKey = "",
+    fingerprintRegion = null;
   let settings = { ...D.DEFAULTS },
     timer,
     count = 0,
@@ -85,6 +89,68 @@
       !settings.disabledHosts.includes(location.hostname) &&
       !cubeLabPage()
     );
+  }
+  function readFingerprint() {
+    const meta = document.querySelector('meta[name="cubelab-fingerprint" i]');
+    const script = document.getElementById("cubelab-moves");
+    if (
+      !D.parseFingerprintMarker(meta?.getAttribute("content")) ||
+      script?.localName !== "script" ||
+      script.getAttribute("type")?.trim().toLowerCase() !== "application/json"
+    )
+      return null;
+    const parsed = D.parseFingerprintMoves(script.textContent);
+    if (!parsed) return null;
+    // The Moves line is the element the app renders right before the block.
+    let region = script.previousElementSibling;
+    while (region && ownedLinks.has(region))
+      region = region.previousElementSibling;
+    return { script, region, ...parsed };
+  }
+  function removeFingerprintBadge() {
+    if (!fingerprintBadge) return;
+    fingerprintBadge.remove();
+    ownedLinks.delete(fingerprintBadge);
+    floatingRanges.delete(fingerprintBadge);
+    fingerprintBadge = null;
+  }
+  function syncFingerprintBadge(fingerprint) {
+    const match = fingerprint?.match;
+    const owner = fingerprint?.script;
+    if (!match || (!fingerprintBadge && ownedLinks.size >= 500))
+      return removeFingerprintBadge();
+    const link = makeLink(match);
+    if (!link) return removeFingerprintBadge();
+    ownedLinks.delete(link);
+    const floating = settings.badgeStyle === "floating" && fingerprint.region;
+    const keep =
+      fingerprintBadge?.isConnected &&
+      Boolean(floatingRanges.has(fingerprintBadge)) === Boolean(floating) &&
+      (floating || fingerprintBadge.nextElementSibling === owner);
+    const key = signature(match.source, { size: match.size });
+    if (keep && key === fingerprintKey) return;
+    fingerprintKey = key;
+    if (keep) {
+      // Same node, new data: follow the block without replacing the badge.
+      fingerprintBadge.className = link.className;
+      fingerprintBadge.href = link.href;
+      fingerprintBadge.title = link.title;
+      fingerprintBadge.setAttribute(
+        "aria-label",
+        link.getAttribute("aria-label"),
+      );
+      fingerprintBadge.replaceChildren(...link.childNodes);
+      return;
+    }
+    removeFingerprintBadge();
+    ownedLinks.add(link);
+    fingerprintBadge = link;
+    if (floating) {
+      const range = document.createRange();
+      range.selectNodeContents(fingerprint.region);
+      document.body.append(link);
+      floatingRanges.set(link, range);
+    } else owner.before(link);
   }
   function clearRecord(record) {
     // Undo only extension-created splits, preserving page-owned text nodes.
@@ -321,7 +387,11 @@
         let descend = true;
         if (ownedLinks.has(node)) descend = false;
         else if (node.nodeType === 1) {
-          if (node.matches(SKIP) || view.style(node).display === "none") {
+          if (
+            node.matches(SKIP) ||
+            fingerprintRegion?.contains(node) ||
+            view.style(node).display === "none"
+          ) {
             append(node, "\0");
             descend = false;
           } else {
@@ -494,6 +564,8 @@
     observer.disconnect();
     try {
       if (!document.body) return;
+      const fingerprint = active() ? readFingerprint() : null;
+      fingerprintRegion = fingerprint?.region ?? null;
       const all = force || fullScan || count >= 500;
       let roots = all
         ? [document.body]
@@ -512,7 +584,7 @@
           }
         }
       }
-      if (!active()) return;
+      if (!active()) return removeFingerprintBadge();
       const page = pageContext(),
         view = visibility();
       let { blocks, widgets } = collect(roots, view);
@@ -562,6 +634,7 @@
           widgetRecords.set(widget, { key, links: [{ link }] });
         }
       }
+      syncFingerprintBadge(fingerprint);
     } finally {
       count = [...ownedLinks].filter((link) => link.isConnected).length;
       running = false;

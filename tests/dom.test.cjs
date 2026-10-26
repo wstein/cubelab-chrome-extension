@@ -510,3 +510,221 @@ for (const [key, style] of Object.entries(websiteStyles)) {
     }
   });
 }
+
+const marker =
+  '<meta name="cubelab-fingerprint" content="spec=1;app=cube-assembler@0.1.0">';
+const movesBlock = (value) =>
+  `<script type="application/json" id="cubelab-moves">${JSON.stringify({ format: "layer-prefix/v1", ...value }).replaceAll("<", "\\u003c")}</script>`;
+const app = (value, { head = marker, line = "Moves: 2L' 2R U2" } = {}) =>
+  `<head>${head}</head><body><div id="view"><div class="cube-3d-move-history" role="status">${line}</div>${movesBlock(value)}</div></body>`;
+const movesOf = (link) =>
+  new URLSearchParams(new URL(link.href).hash.slice(1)).get("moves");
+const sizeOf = (link) =>
+  new URLSearchParams(new URL(link.href).hash.slice(1)).get("size");
+
+test("a valid fingerprint makes exactly one badge from the data, even next to the same visible moves", async (t) => {
+  const x = await setup(app({ size: 4, moves: "2L' 2R U2" }));
+  t.after(() => x.dom.window.close());
+  const [link, ...rest] = links(x);
+  assert.equal(rest.length, 0);
+  assert.equal(link.nextElementSibling.id, "cubelab-moves");
+  assert.equal(movesOf(link), "2L' 2R U2");
+  assert.equal(sizeOf(link), "4");
+  assert.equal(link.getAttribute("aria-label"), "Open 4×4 moves in CubeLab");
+  assert.equal(
+    x.doc.querySelector(".cube-3d-move-history").textContent,
+    "Moves: 2L' 2R U2",
+  );
+  assert.equal(x.status().count, 1);
+  // The block is read, never executed or rendered.
+  assert.equal(
+    x.doc.getElementById("cubelab-moves").textContent.includes("<"),
+    false,
+  );
+});
+
+test("the fingerprint size beats page inference, site preferences and the 3x3 default", async (t) => {
+  const x = await setup(
+    "<title>5x5 algorithms</title>" + app({ size: 2, moves: "R U F" }),
+    { sitePreferences: { "example.com": { size: 5 } } },
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(sizeOf(links(x)[0]), "2");
+  assert.match(links(x)[0].getAttribute("aria-label"), /2×2/);
+});
+
+test("without a valid marker, spec or format the visible Moves line is scanned as before", async (t) => {
+  const cases = {
+    "no marker": [app({ size: 3, moves: "U R F" }, { head: "" })],
+    "future spec": [
+      app(
+        { size: 3, moves: "U R F" },
+        { head: '<meta name="cubelab-fingerprint" content="spec=2;app=x">' },
+      ),
+    ],
+    "unknown format": [app({ size: 3, moves: "U R F", format: "x/v2" })],
+    "invalid json": [
+      app({ size: 3, moves: "U R F" }).replace('{"format"', "{"),
+    ],
+    "bad size": [app({ size: 9, moves: "U R F" })],
+    "bad moves": [app({ size: 3, moves: "U R Q" })],
+  };
+  for (const [name, [html]] of Object.entries(cases)) {
+    const x = await setup(html);
+    t.after(() => x.dom.window.close());
+    const found = links(x);
+    assert.equal(found.length, 1, name);
+    assert.equal(movesOf(found[0]), "2L' 2R U2", name);
+    assert.equal(
+      found[0].parentElement.className,
+      "cube-3d-move-history",
+      name,
+    );
+  }
+});
+
+test("6x6 and 7x7 fingerprints and empty histories create no badge and no duplicate from the line", async (t) => {
+  for (const value of [
+    { size: 6, moves: "2L' 2R U2" },
+    { size: 7, moves: "2L' 2R U2" },
+    { size: 3, moves: "" },
+  ]) {
+    const x = await setup(app(value));
+    t.after(() => x.dom.window.close());
+    assert.equal(links(x).length, 0, JSON.stringify(value));
+  }
+});
+
+test("a single move is linked because the data is explicit", async (t) => {
+  const x = await setup(app({ size: 3, moves: "R" }, { line: "Moves: R" }));
+  t.after(() => x.dom.window.close());
+  assert.equal(movesOf(links(x)[0]), "R");
+});
+
+test("fingerprint updates keep the badge node and follow empty, invalid and valid blocks", async (t) => {
+  const x = await setup(app({ size: 3, moves: "R U F" }));
+  t.after(() => x.dom.window.close());
+  const script = () => x.doc.getElementById("cubelab-moves");
+  const write = async (value) => {
+    script().textContent =
+      typeof value === "string"
+        ? value
+        : JSON.stringify({ format: "layer-prefix/v1", ...value });
+    await delay(350);
+  };
+  const first = links(x)[0];
+  await write({ size: 3, moves: "R U F D" });
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0], first);
+  assert.equal(movesOf(first), "R U F D");
+  await write({ size: 5, moves: "R U F D" });
+  assert.equal(links(x)[0], first);
+  assert.equal(sizeOf(first), "5");
+  await write({ size: 3, moves: "" });
+  assert.equal(links(x).length, 0);
+  await write({ size: 3, moves: "L" });
+  assert.equal(links(x).length, 1);
+  assert.equal(movesOf(links(x)[0]), "L");
+  // An invalid update returns the page region to ordinary scanning.
+  await write("{");
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].parentElement.className, "cube-3d-move-history");
+  assert.equal(movesOf(links(x)[0]), "2L' 2R U2");
+  await write({ size: 3, moves: "B" });
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].nextElementSibling, script());
+  assert.equal(x.doc.querySelectorAll(".cube-3d-move-history a").length, 0);
+});
+
+test("removing the block or the marker removes the badge and restores scanning", async (t) => {
+  const x = await setup(app({ size: 3, moves: "R U F" }));
+  t.after(() => x.dom.window.close());
+  x.doc.querySelector('meta[name="cubelab-fingerprint"]').remove();
+  await delay(350);
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].parentElement.className, "cube-3d-move-history");
+  x.doc.head.insertAdjacentHTML("beforeend", marker);
+  await delay(350);
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].nextElementSibling.id, "cubelab-moves");
+  x.doc.getElementById("cubelab-moves").remove();
+  await delay(350);
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].parentElement.className, "cube-3d-move-history");
+  x.doc.getElementById("view").remove();
+  await delay(350);
+  assert.equal(links(x).length, 0);
+  assert.equal(x.status().count, 0);
+});
+
+test("fingerprint badges respect disabling, hosts, badge styles and the badge cap", async (t) => {
+  for (const settings of [
+    { enabled: false },
+    { disabledHosts: ["example.com"] },
+  ]) {
+    const x = await setup(app({ size: 3, moves: "R U F" }), settings);
+    t.after(() => x.dom.window.close());
+    assert.equal(links(x).length, 0);
+  }
+  const floating = await setup(app({ size: 3, moves: "R U F" }), {
+    badgeStyle: "floating",
+  });
+  t.after(() => floating.dom.window.close());
+  assert.equal(links(floating).length, 1);
+  assert.equal(links(floating)[0].parentElement, floating.doc.body);
+  assert.match(links(floating)[0].textContent, /3×3 moves/);
+  const classic = await setup(app({ size: 3, moves: "R U F" }), {
+    badgeStyle: "classic",
+  });
+  t.after(() => classic.dom.window.close());
+  assert.match(links(classic)[0].textContent, /3×3 moves/);
+  await classic.change({ badgeStyle: "compact" });
+  assert.equal(links(classic).length, 1);
+  assert.equal(links(classic)[0].textContent, "");
+  await classic.change({ enabled: false });
+  assert.equal(links(classic).length, 0);
+  const capped = await setup(
+    app({ size: 3, moves: "R U F" }) +
+      Array.from({ length: 500 }, () => "<p>R U F</p>").join(""),
+  );
+  t.after(() => capped.dom.window.close());
+  assert.equal(links(capped).length, 500);
+});
+
+test("a block without a preceding Moves element still gets one badge before it", async (t) => {
+  const x = await setup(
+    `<head>${marker}</head><body>${movesBlock({ size: 3, moves: "R U F" })}<p>R U F</p></body>`,
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 2);
+  const floating = await setup(
+    `<head>${marker}</head><body>${movesBlock({ size: 3, moves: "R U F" })}</body>`,
+    { badgeStyle: "floating" },
+  );
+  t.after(() => floating.dom.window.close());
+  assert.equal(links(floating).length, 1);
+});
+
+test("fingerprint badges follow style changes, skip unusable destinations and stay put", async (t) => {
+  const x = await setup(app({ size: 3, moves: "R U F" }));
+  t.after(() => x.dom.window.close());
+  const badge = links(x)[0];
+  await x.change({ badgeStyle: "floating" });
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].parentElement, x.doc.body);
+  await x.change({ badgeStyle: "classic" });
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].nextElementSibling.id, "cubelab-moves");
+  await x.change({ badgeStyle: "compact" });
+  const settled = links(x)[0];
+  const icon = settled.firstChild;
+  x.scan();
+  assert.equal(links(x)[0], settled);
+  assert.equal(settled.firstChild, icon);
+  assert.notEqual(settled, badge);
+  const http = await setup(app({ size: 3, moves: "R U F" }), {
+    movesTemplate: "http://example.com/#{notation}",
+  });
+  t.after(() => http.dom.window.close());
+  assert.equal(links(http).length, 0);
+});
