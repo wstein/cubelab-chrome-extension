@@ -511,3 +511,186 @@ test("SiGN numbered layers and blocks translate across all supported sizes", () 
   assert.ok(D.parseMoves(Array(2000).fill("2R").join(" "), 2));
   assert.equal(D.parseMoves(Array(2001).fill("2R").join(" "), 2), null);
 });
+
+const block = (value) =>
+  JSON.stringify({ format: "layer-prefix/v1", ...value });
+test("fingerprint marker needs spec 1 exactly once and ignores unknown pairs", () => {
+  assert.deepEqual(
+    D.parseFingerprintMarker("spec=1;app=cube-assembler@0.1.0"),
+    {
+      spec: 1,
+      app: "cube-assembler@0.1.0",
+    },
+  );
+  assert.deepEqual(
+    D.parseFingerprintMarker(" spec = 1 ; future=x=y ;; bogus"),
+    {
+      spec: 1,
+      app: "",
+    },
+  );
+  for (const content of [
+    undefined,
+    null,
+    42,
+    "",
+    "app=x",
+    "spec=2;app=x",
+    "spec=01",
+    "spec=1.0",
+    "spec=",
+    "spec=1;spec=1",
+    "spec=1;spec=2",
+    "spec=2;spec=1",
+    `spec=1;app=${"x".repeat(600)}`,
+  ])
+    assert.equal(D.parseFingerprintMarker(content), null, String(content));
+});
+test("fingerprint block yields the faithful moves, size and a CubeLab match", () => {
+  const parsed = D.parseFingerprintMoves(
+    block({ size: 5, moves: "2L' 2R U2 Rw 3Rw' 2-3Rw2 x y2 z'" }),
+  );
+  assert.equal(parsed.size, 5);
+  assert.equal(parsed.moves, "2L' 2R U2 Rw 3Rw' 2-3Rw2 x y2 z'");
+  assert.equal(parsed.match.kind, "moves");
+  assert.equal(parsed.match.size, 5);
+  assert.equal(parsed.match.source, parsed.moves);
+  const url = new URL(D.makeURL(parsed.match));
+  const params = new URLSearchParams(url.hash.slice(1));
+  assert.equal(params.get("moves"), parsed.moves);
+  assert.equal(params.get("size"), "5");
+  // Unknown fields are fine; one move is enough because the data is explicit.
+  const single = D.parseFingerprintMoves(
+    block({ size: 3, moves: "R", extra: [1, 2] }),
+  );
+  assert.equal(single.match.source, "R");
+  assert.equal(
+    new URLSearchParams(new URL(D.makeURL(single.match)).hash.slice(1)).get(
+      "size",
+    ),
+    null,
+  );
+  const two = D.parseFingerprintMoves(block({ size: 2, moves: "R U2" }));
+  assert.equal(two.match.size, 2);
+});
+test("fingerprint size selects the destination size on every supported cube", () => {
+  for (const size of [2, 3, 4, 5]) {
+    const parsed = D.parseFingerprintMoves(block({ size, moves: "R U F" }));
+    assert.equal(parsed.size, size);
+    assert.equal(parsed.match.size, size);
+    const params = new URLSearchParams(
+      new URL(D.makeURL(parsed.match)).hash.slice(1),
+    );
+    assert.equal(params.get("size"), size === 3 ? null : String(size));
+  }
+  // Layers must exist on the stated size.
+  assert.equal(D.parseFingerprintMoves(block({ size: 3, moves: "4R" })), null);
+  assert.equal(D.parseFingerprintMoves(block({ size: 2, moves: "3R" })), null);
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 4, moves: "2-5Rw" })),
+    null,
+  );
+  assert.equal(D.parseFingerprintMoves(block({ size: 5, moves: "6R" })), null);
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 5, moves: "3-2Rw" })),
+    null,
+  );
+});
+test("fingerprint on 6x6 and 7x7 is valid but has no CubeLab match", () => {
+  for (const size of [6, 7]) {
+    const parsed = D.parseFingerprintMoves(
+      block({ size, moves: "6R 2-3Rw U" }),
+    );
+    assert.deepEqual(parsed, { size, moves: "6R 2-3Rw U", match: null });
+  }
+  assert.equal(D.parseFingerprintMoves(block({ size: 6, moves: "Q" })), null);
+});
+test("fingerprint with no moves is valid and has no match", () => {
+  assert.deepEqual(D.parseFingerprintMoves(block({ size: 3, moves: "" })), {
+    size: 3,
+    moves: "",
+    match: null,
+  });
+});
+test("fingerprint validation rejects everything that is not exactly the contract", () => {
+  const bad = [
+    undefined,
+    null,
+    7,
+    "",
+    "{",
+    "not json",
+    "null",
+    "[]",
+    '"R"',
+    "{}",
+    block({ size: 3 }),
+    block({ moves: "R" }),
+    JSON.stringify({ size: 3, moves: "R" }),
+    block({ size: 3, moves: "R", format: "layer-prefix/v2" }),
+    block({ size: 3, moves: "R", format: 1 }),
+    block({ size: "3", moves: "R" }),
+    block({ size: 3.5, moves: "R" }),
+    block({ size: 1, moves: "R" }),
+    block({ size: 1, moves: "" }),
+    block({ size: 8, moves: "R" }),
+    block({ size: -3, moves: "R" }),
+    block({ size: null, moves: "R" }),
+    block({ size: 3, moves: ["R"] }),
+    block({ size: 3, moves: null }),
+    block({ size: 3, moves: "None" }),
+    block({ size: 3, moves: "r" }),
+    block({ size: 3, moves: "R  U" }),
+    block({ size: 3, moves: " R" }),
+    block({ size: 3, moves: "R " }),
+    block({ size: 3, moves: "R\nU" }),
+    block({ size: 3, moves: "R2'" }),
+    block({ size: 3, moves: "R3" }),
+    block({ size: 3, moves: "Rww" }),
+    block({ size: 3, moves: "1R" }),
+    block({ size: 3, moves: "8R" }),
+    block({ size: 3, moves: "(R U)2" }),
+    block({ size: 3, moves: "M" }),
+    block({ size: 3, moves: "R U\u00a0F" }),
+    block({ size: 3, moves: "R, U" }),
+  ];
+  for (const text of bad)
+    assert.equal(D.parseFingerprintMoves(text), null, String(text));
+  // Escaped "<" parses back to the original character and is not move syntax.
+  assert.equal(
+    D.parseFingerprintMoves(
+      '{"size":3,"moves":"R \\u003c","format":"layer-prefix/v1"}',
+    ),
+    null,
+  );
+  assert.ok(
+    D.parseFingerprintMoves(
+      '{"size":3,"format":"layer-prefix/v1","moves":"R U\\u0020F"}',
+    ),
+  );
+});
+test("fingerprint payload and history are bounded", () => {
+  const long = Array.from({ length: 2000 }, (_, i) => (i % 2 ? "U" : "R"));
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 3, moves: long.join(" ") })).moves
+      .length,
+    3999,
+  );
+  assert.equal(
+    D.parseFingerprintMoves(
+      block({ size: 3, moves: [...long, "R"].join(" ") }),
+    ),
+    null,
+  );
+  assert.equal(D.FINGERPRINT_MAX_CHARS, 16384);
+  const padded = block({ size: 3, moves: "R U" }) + " ".repeat(16384);
+  assert.equal(D.parseFingerprintMoves(padded), null);
+  const edge = block({ size: 3, moves: "R U" });
+  assert.ok(D.parseFingerprintMoves(edge + " ".repeat(16384 - edge.length)));
+});
+test("a facelet-shaped history is still a move list", () => {
+  const faces = "URFDLB";
+  const moves = Array.from({ length: 24 }, (_, i) => faces[i % 6]).join(" ");
+  const parsed = D.parseFingerprintMoves(block({ size: 2, moves }));
+  assert.equal(parsed.match.kind, "moves");
+});

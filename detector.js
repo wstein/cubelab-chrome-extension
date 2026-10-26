@@ -694,6 +694,69 @@
     }
     return found.sort((a, b) => a.start - b.start);
   }
+  // CubeAssembler fingerprint (see FINGERPRINT.md): strict, bounded, read-only.
+  const FINGERPRINT_SPEC = 1;
+  const FINGERPRINT_MAX_CHARS = 16384;
+  const FINGERPRINT_FORMAT = "layer-prefix/v1";
+  const fingerprintTurn =
+    "(?:(?:[2-7]-[2-7]|[2-7])?[URFDLB]w?['2]?|[xyz]['2]?)";
+  const fingerprintMoves = new RegExp(
+    `^(?:${fingerprintTurn}(?: ${fingerprintTurn})*)?$`,
+  );
+  function parseFingerprintMarker(content) {
+    if (typeof content !== "string" || content.length > 512) return null;
+    const pairs = new Map();
+    for (const part of content.split(";")) {
+      const at = part.indexOf("=");
+      if (at < 0) continue;
+      const key = part.slice(0, at).trim();
+      pairs.set(key, pairs.has(key) ? null : part.slice(at + 1).trim());
+    }
+    return pairs.get("spec") === String(FINGERPRINT_SPEC)
+      ? { spec: FINGERPRINT_SPEC, app: pairs.get("app") || "" }
+      : null;
+  }
+  function parseFingerprintMoves(text) {
+    if (typeof text !== "string" || text.length > FINGERPRINT_MAX_CHARS)
+      return null;
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return null;
+    }
+    if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+    const { size, moves, format } = data;
+    if (
+      format !== FINGERPRINT_FORMAT ||
+      !Number.isInteger(size) ||
+      size < 2 ||
+      size > 7 ||
+      typeof moves !== "string" ||
+      !fingerprintMoves.test(moves)
+    )
+      return null;
+    const count = moves ? moves.split(" ").length : 0;
+    if (count > MAX) return null;
+    // Sizes 6 and 7 are valid data that this extension cannot link, like the
+    // 6x6/7x7 pages it already skips. An empty history has nothing to link.
+    if (!count || size > 5) return { size, moves, match: null };
+    const parsed = parseMoves(moves, size);
+    if (!parsed || parsed.moves.length !== count) return null;
+    return {
+      size,
+      moves,
+      match: {
+        kind: "moves",
+        notation: parsed.moves.join(" "),
+        size,
+        lowercaseMode: "Wide",
+        minSize: parsed.minSize,
+        confidence: "high",
+        source: moves,
+      },
+    };
+  }
   function makeURL(result, settings = DEFAULTS) {
     const template =
       result.kind === "moves" ? settings.movesTemplate : settings.algTemplate;
@@ -742,6 +805,9 @@
     detect,
     inferSize,
     makeURL,
+    FINGERPRINT_MAX_CHARS,
+    parseFingerprintMarker,
+    parseFingerprintMoves,
   };
   root.CubeLabDetector = api;
   if (typeof module !== "undefined") module.exports = api;
