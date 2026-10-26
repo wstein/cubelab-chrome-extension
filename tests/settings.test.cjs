@@ -77,6 +77,15 @@ test("failed writes do not poison the queue; reset is ordered with updates", asy
   assert.deepEqual(D.DEFAULTS.sitePreferences, {});
 });
 
+test("site size preferences accept every size from 2 to 7 and null", async () => {
+  const { storage, store } = storageHarness();
+  for (const size of [2, 3, 4, 5, 6, 7, null])
+    await store.update({ type: "site", host: "example.com", patch: { size } });
+  await store.update({ type: "site", host: "example.com", patch: { size: 7 } });
+  const { settings } = await storage.get();
+  assert.equal(settings.sitePreferences["example.com"].size, 7);
+});
+
 test("invalid patches never change stored settings", async () => {
   const { store, storage } = storageHarness();
   for (const change of [
@@ -86,7 +95,7 @@ test("invalid patches never change stored settings", async () => {
     { type: "global", patch: { algTemplate: "https://example.com/" } },
     { type: "site", host: "", patch: { size: 3 } },
     { type: "site", host: "example.com/path", patch: { size: 3 } },
-    { type: "site", host: "example.com", patch: { size: 6 } },
+    { type: "site", host: "example.com", patch: { size: 8 } },
     { type: "global", patch: { disabledHosts: [] } },
     { type: "unknown" },
   ])

@@ -601,6 +601,17 @@ test("an empty history creates no badge and no duplicate from the line", async (
   assert.equal(links(x).length, 0);
 });
 
+test("widgets and site sizes accept 6x6 and 7x7", async (t) => {
+  const x = await setup(
+    '<twisty-player puzzle="6x6x6" alg="3Rw U 4F\'"></twisty-player><p>2-3Uw R 3Fw\'</p>',
+    { sitePreferences: { "example.com": { size: 7 } } },
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 2);
+  assert.equal(sizeOf(links(x)[0]), "7");
+  assert.equal(sizeOf(links(x)[1]), "7");
+});
+
 test("a single move is linked because the data is explicit", async (t) => {
   const x = await setup(app({ size: 3, moves: "R" }, { line: "Moves: R" }));
   t.after(() => x.dom.window.close());

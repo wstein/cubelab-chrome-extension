@@ -19,7 +19,7 @@
         if (key === "enabled" && typeof value === "boolean") {
           next.disabledHosts = next.disabledHosts.filter((h) => h !== host);
           if (!value) next.disabledHosts.push(host);
-        } else if (key === "size" && [null, 2, 3, 4, 5].includes(value)) {
+        } else if (key === "size" && [null, 2, 3, 4, 5, 6, 7].includes(value)) {
           prefs.size = value;
         } else if (
           key === "lowercaseMode" &&

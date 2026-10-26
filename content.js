@@ -403,7 +403,7 @@
           const value = !view.visible(parent)
             ? "\0"
             : parent.closest("sub")
-              ? node.data.replace(/[2-5]/g, (n) => "₂₃₄₅"[Number(n) - 2])
+              ? node.data.replace(/[2-7]/g, (n) => "₂₃₄₅₆₇"[Number(n) - 2])
               : node.data;
           append(node, value);
         }
@@ -526,7 +526,7 @@
       page.size;
     if (
       (!prefs.size && (nonCube(puzzle + " " + heading) || page.nonCube)) ||
-      (size && ![2, 3, 4, 5].includes(size))
+      (size && ![2, 3, 4, 5, 6, 7].includes(size))
     )
       return null;
     const match = D.classify(raw, {
