@@ -30,6 +30,15 @@ and trim), with no other rewriting. Internal detection may
 validate equivalents but never emits them instead of the original source.
 Destination parser differences are not worked around by rewriting notation.
 
+## Machine-readable fingerprints
+
+[CubeAssembler](https://github.com/wstein/cube-assembler) publishes a meta marker
+and a JSON moves block for this extension. When both are valid, the extension
+links the block's moves and size and does not scan the Moves line next to it;
+otherwise it scans the page as for any site. 6×6/7×7 stay unsupported. See
+[FINGERPRINT.md](FINGERPRINT.md). The Chromium tests use a local fixture page
+shaped like the app, not the live deployment.
+
 ## Historical site observations
 
 | Site                                                                                 | Implementation / evidence                                                                                                                               | Remaining limitation                                                                                                                                           |

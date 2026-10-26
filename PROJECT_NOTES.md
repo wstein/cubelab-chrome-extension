@@ -1,5 +1,17 @@
 # Project notes
 
+## CubeAssembler fingerprint
+
+A valid `cubelab-fingerprint` meta marker (`spec=1`) plus the `#cubelab-moves`
+JSON block replaces scraping of the app's Moves line: one badge from the block's
+validated moves and size, placed before the block, with the preceding element
+excluded from text scanning. Invalid, unknown-spec, unsupported-format or
+oversized (16384 characters, 2000 turns) data falls back to ordinary scanning.
+Sizes 6/7 are valid but unlinkable, matching the existing 6×6/7×7 exclusion.
+The moves are sent unchanged apart from the whitespace-only cleanup. Updates
+reuse the badge node through the existing observer. Details and the known
+producer/extension gaps are in [FINGERPRINT.md](FINGERPRINT.md).
+
 ## Badge presentation modes
 
 Compact external-link icons remain the default. Settings now also offer a full

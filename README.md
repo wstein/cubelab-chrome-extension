@@ -65,6 +65,10 @@ size rules, supported operators, and validation against CubeLab's SSE updates.
 See [SIGN_NOTATION.md](SIGN_NOTATION.md) for SiGN numbered layers, lowercase
 blocks, ranges, and opposite-face/full-cube translations.
 
+See [FINGERPRINT.md](FINGERPRINT.md) for the machine-readable hint that
+CubeAssembler publishes: its moves and size are linked directly instead of
+scraping the visible Moves line.
+
 Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 2026-09-15:
 
 - [URL state reader/writer](https://github.com/wstein/cubelab/blob/e8b8ef45b348a91104b7402238556296eeac03ff/src/client/store.ts): `moves`, `alg`, `size`, `dialect`, `lowercase`, `scheme`.
@@ -154,13 +158,13 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 98 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 118 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 98.33%. This gate covers
+least 93% of branches; the measured branch coverage is 98.55%. This gate covers
 `detector.js`, not code evaluated in simulated browser contexts.
 
-Fifteen Chromium tests cover CubeLab self-exclusion, original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
+Twenty-five Chromium tests (nine of them for the CubeAssembler fingerprint) cover CubeLab self-exclusion, original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
 popup/options persistence, site disabling, widget sizes/setup, context-menu
 registration, and badge navigation. The destination is intercepted to verify
