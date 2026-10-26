@@ -84,18 +84,36 @@ for (const [name, options] of [
   });
 }
 
-test("6x6 and empty histories create no badge and do not scrape the line", async ({
+for (const size of [6, 7]) {
+  test(`${size}x${size} gives one badge with inner layers and the stated size`, async ({
+    context,
+    page: tab,
+  }) => {
+    await open(
+      context,
+      tab,
+      `size-${size}`,
+      page({
+        json: { size, moves: "2L' 3Rw U2" },
+        line: "Moves: 2L' 3Rw U2",
+      }),
+    );
+    await expect(tab.locator(".cubelab-link")).toHaveCount(1);
+    expect(await moves(tab)).toEqual(["2L' 3Rw U2"]);
+    expect(
+      await tab
+        .locator(".cubelab-link")
+        .evaluate((link) =>
+          new URLSearchParams(new URL(link.href).hash.slice(1)).get("size"),
+        ),
+    ).toBe(String(size));
+  });
+}
+
+test("empty histories create no badge and do not scrape the line", async ({
   context,
   page: tab,
 }) => {
-  await open(
-    context,
-    tab,
-    "six",
-    page({ json: { size: 6, moves: "2L' 2R U2" } }),
-  );
-  await tab.waitForTimeout(600);
-  await expect(tab.locator(".cubelab-link")).toHaveCount(0);
   await open(
     context,
     tab,
