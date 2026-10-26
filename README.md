@@ -1,6 +1,6 @@
 # CubeLab Linker — Chrome extension
 
-Adds small CubeLab links, marked with a consistent external-link icon, next to cube notation on ordinary web pages. Supports 2×2–5×5 cubes. Manifest V3, no build step, no runtime dependencies, no telemetry.
+Adds small CubeLab links, marked with a consistent external-link icon, next to cube notation on ordinary web pages. Supports 2×2–7×7 cubes for moves (SSE and state formats: 2×2–5×5). Manifest V3, no build step, no runtime dependencies, no telemetry.
 
 ## Install
 
@@ -18,7 +18,7 @@ Click a CubeLab badge to open the notation in a new tab. The original notation a
 
 For unusual notation, select it and choose **Open selection in CubeLab** from the right-click menu. Unrecognized selections are passed unchanged to CubeLab's `alg` input; this does not promise that CubeLab can parse them.
 
-Size is inferred from explicit widget puzzle attributes, nearby headings, page title/URL, facelet count, or minimum layer requirements. Ordinary algorithms without a size hint default to 3×3. **Set the size in the popup on mixed-size pages or timers when their selected puzzle is not exposed in text.** Recognizable 6×6/7×7 and non-cube headings are excluded. This is a heuristic, not a general puzzle classifier.
+Size is inferred from explicit widget puzzle attributes, nearby headings, page title/URL, facelet count, or minimum layer requirements. Ordinary algorithms without a size hint default to 3×3. **Set the size in the popup on mixed-size pages or timers when their selected puzzle is not exposed in text.** Non-cube headings are excluded; 6×6 and 7×7 are supported for moves. This is a heuristic, not a general puzzle classifier.
 
 Settings changes preserve unrelated preferences made in other open extension
 pages. Save errors appear in the page where the change was made. **Restore
@@ -37,7 +37,7 @@ text or the tester input. Parsing below is only for detection and metadata.
 | Input                                                           | Handling                                                                    |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `R U' F2`, `RUR'U'`, Unicode primes, `Ri`, dash-separated moves | Recognize syntax; preserve spelling with whitespace-only cleanup            |
-| `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3 and 5×5             |
+| `Rw`, `3Uw`, lowercase `r`, `2R`, `2-3Rw`, `M E S`, `x y z`     | Parse with size constraints; slice moves allowed on 3×3, 5×5 and 7×7        |
 | `(R U)3`, `[R,U]`, `[R: U2]`, nested groups and inverse repeats | Validate with a 2,000-move expansion limit; send original groups            |
 | Ruwix `F₂'` or actual HTML `<sub>2</sub>`                       | Preserve subscript notation (`<sub>` is extracted as Unicode)               |
 | Jaap `Rs`, `Ra`, `Rm`, `Rc`, and `(sequence)2`                  | Validate Jaap's slice/anti-slice notation; delegate the original expression |
@@ -158,7 +158,7 @@ Prettier and ESLint are also development-only. Run formatting, linting, and test
 before committing; `npm run format:check` checks formatting without changing files.
 See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementation notes.
 
-The unit/DOM suite has 118 tests covering detection, URL construction, concurrent
+The unit/DOM suite has 122 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
 least 93% of branches; the measured branch coverage is 98.55%. This gate covers

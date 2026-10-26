@@ -1,7 +1,7 @@
 # SiGN notation
 
 The extension supports core [Simple General Notation (SiGN)](https://www.mzrg.com/rubik/nota.shtml)
-on 2×2×2 through 5×5×5 alongside WCA and SSE.
+on 2×2×2 through 7×7×7 alongside WCA and SSE.
 
 Links and tester output preserve the original SiGN expression. The equivalents
 below explain internal validation only; CubeLab receives the source notation
@@ -34,7 +34,7 @@ site setting is a different convention. Numbered lowercase blocks are
 preserved in links, not replaced with uppercase `w` moves.
 
 Optional big-cube `M/E/S` and `m/e/s` extensions in the reference are not core
-SiGN support. Existing `M/E/S` behavior remains limited to odd cubes; use
+SiGN support. Existing `M/E/S` behavior remains limited to odd cubes (3×3, 5×5, 7×7); use
 numbered layers or ranges for portable big-cube algorithms. Non-cube and
 less-common extension operators are outside this scope.
 

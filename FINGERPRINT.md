@@ -80,13 +80,9 @@ cleanup, and CubeLab interprets it; see
 parser is used only to check that the string is faithful for the stated size
 (every layer exists, every turn is one move).
 
-Known gaps between the producer and this extension:
+Sizes 2 to 7 are all linked: layers 6 and 7 exist on 6×6 and 7×7 and are
+checked like any other layer. Known gaps between the producer and this extension:
 
-- **Sizes 6 and 7.** The producer allows 2 to 7. The extension supports 2×2
-  to 5×5 only and skips 6×6/7×7 pages. A valid block with size 6 or 7 is
-  recognized but creates no badge, and the Moves line it describes is still
-  not scanned (scanning it would guess 3×3 and link the wrong cube). Layer
-  prefixes 6 and 7 are accepted syntactically for that reason.
 - **Half turns of rotations.** The producer's prose allows `x2`, `y2`, `z2`,
   but its JSON Schema pattern only allows `[xyz]'?`. The extension follows
   the prose and accepts `x2`; the schema should be corrected on the producer
