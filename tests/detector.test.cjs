@@ -142,7 +142,7 @@ test("wide, slice, rotation, inner-layer and 5x5 notation", () => {
     assert.equal(detect(s)[0].kind, "moves");
   assert.equal(D.classify("3Rw U 3Rw'").minSize, 4);
   assert.equal(D.detect("3Rw U 3Rw'", { size: 3 })[0].notation, "x U x'");
-  assert.equal(D.classify("6Rw U R"), null);
+  assert.equal(D.classify("8Rw U R"), null);
 });
 test("unicode and compact algorithms", () => {
   assert.equal(detect("R U′ R’ U²")[0].notation, "R U' R' U2");
@@ -395,9 +395,9 @@ test("input and expansion limits reject excess without rejecting the boundary", 
   assert.equal(D.classify(" ".repeat(8001)), null);
   assert.deepEqual(D.detect(" ".repeat(32001)), []);
   assert.deepEqual(D.detect(null), []);
-  assert.deepEqual(D.detect("R U F", { size: 6 }), []);
+  assert.deepEqual(D.detect("R U F", { size: 8 }), []);
   assert.deepEqual(D.detect("(ur,dr)", { size: 4 }), []);
-  assert.equal(D.classify("CD2 U F", { size: 6 }), null);
+  assert.equal(D.classify("CD2 U F", { size: 8 }), null);
   assert.equal(D.inferSize("ordinary page"), null);
 });
 
@@ -574,7 +574,7 @@ test("fingerprint block yields the faithful moves, size and a CubeLab match", ()
   assert.equal(two.match.size, 2);
 });
 test("fingerprint size selects the destination size on every supported cube", () => {
-  for (const size of [2, 3, 4, 5]) {
+  for (const size of [2, 3, 4, 5, 6, 7]) {
     const parsed = D.parseFingerprintMoves(block({ size, moves: "R U F" }));
     assert.equal(parsed.size, size);
     assert.equal(parsed.match.size, size);
@@ -592,17 +592,39 @@ test("fingerprint size selects the destination size on every supported cube", ()
   );
   assert.equal(D.parseFingerprintMoves(block({ size: 5, moves: "6R" })), null);
   assert.equal(
+    D.parseFingerprintMoves(block({ size: 5, moves: "2-6Rw" })),
+    null,
+  );
+  assert.equal(
     D.parseFingerprintMoves(block({ size: 5, moves: "3-2Rw" })),
     null,
   );
 });
-test("fingerprint on 6x6 and 7x7 is valid but has no CubeLab match", () => {
+test("fingerprint on 6x6 and 7x7 links wide, ranged and inner-layer moves", () => {
+  const moves = "6R 2-3Rw U 3Fw2 2-5Uw' 4L x y2 z'";
   for (const size of [6, 7]) {
-    const parsed = D.parseFingerprintMoves(
-      block({ size, moves: "6R 2-3Rw U" }),
+    const parsed = D.parseFingerprintMoves(block({ size, moves }));
+    assert.equal(parsed.size, size);
+    assert.equal(parsed.match.size, size);
+    assert.equal(parsed.match.source, moves);
+    const params = new URLSearchParams(
+      new URL(D.makeURL(parsed.match)).hash.slice(1),
     );
-    assert.deepEqual(parsed, { size, moves: "6R 2-3Rw U", match: null });
+    assert.equal(params.get("size"), String(size));
+    assert.equal(params.get("moves"), moves);
   }
+  const seven = D.parseFingerprintMoves(block({ size: 7, moves: "7R 2-7Uw" }));
+  assert.equal(seven.match.size, 7);
+  // Layers must exist on the stated size.
+  assert.equal(D.parseFingerprintMoves(block({ size: 6, moves: "7R" })), null);
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 6, moves: "2-7Rw" })),
+    null,
+  );
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 7, moves: "5-3Rw" })),
+    null,
+  );
   assert.equal(D.parseFingerprintMoves(block({ size: 6, moves: "Q" })), null);
 });
 test("fingerprint with no moves is valid and has no match", () => {
@@ -693,4 +715,31 @@ test("a facelet-shaped history is still a move list", () => {
   const moves = Array.from({ length: 24 }, (_, i) => faces[i % 6]).join(" ");
   const parsed = D.parseFingerprintMoves(block({ size: 2, moves }));
   assert.equal(parsed.match.kind, "moves");
+});
+
+test("6x6 and 7x7 modern notation is detected, sized and checked against the size", () => {
+  const found = D.detect("3Rw U 4F' 2-3Uw2 5L", { size: 6 });
+  assert.equal(found.length, 1);
+  assert.equal(found[0].size, 6);
+  assert.equal(found[0].notation, "3Rw U 4F' 2-3Uw2 5L");
+  assert.equal(D.classify("6R U F", { size: 6 }).size, 6);
+  assert.equal(D.classify("6R U F", { size: 5 }), null);
+  assert.equal(D.classify("7R U F", { size: 6 }), null);
+  // Without a size the layers imply the smallest cube that has them.
+  assert.equal(D.classify("6R U F").size, 7);
+  assert.equal(D.classify("2-6Rw U F").size, 7);
+  assert.equal(D.classify("4Rw U F", { size: 7 }).size, 7);
+  // SiGN lowercase numbered blocks and full-width layers reach the same layers.
+  assert.equal(D.classify("6r U F", { size: 7 }).notation, "6Rw U F");
+  assert.equal(D.classify("2-6r U F", { size: 7 }).notation, "2-6Rw U F");
+  assert.equal(D.classify("6r U F", { size: 6 }).notation, "x U F");
+  assert.equal(D.classify("2-6r U F", { size: 6 }).notation, "5Lw' U F");
+  assert.equal(D.classify("6U R F", { size: 6 }).notation, "D' R F");
+  assert.equal(D.classify("7U R F", { size: 7 }).notation, "D' R F");
+  // Dash-separated and subscript spellings follow the same layer range.
+  assert.equal(D.classify("R₆ U F", { size: 7 }).notation, "6Rw U F");
+  assert.equal(D.classify("R₆ U F", { size: 6 }).notation, "x U F");
+  // Slices exist on odd cubes only.
+  assert.equal(D.classify("M U E", { size: 7 }).size, 7);
+  assert.equal(D.classify("M U E", { size: 6 }), null);
 });

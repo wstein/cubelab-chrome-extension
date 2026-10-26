@@ -434,14 +434,16 @@ test("skipped content is a boundary, not silently joined into another algorithm"
     x.dom.window.close();
   }
 });
-test("mixed galleries respect local sizes and skip out-of-scope puzzles", async () => {
+test("mixed galleries respect local sizes, including 6x6 and 7x7, and skip out-of-scope puzzles", async () => {
   const x = await setup(
-    "<title>Cube patterns</title><h2>2x2</h2><p>R U R′ U′</p><h2>6x6</h2><p>R U R′ U′</p><h2>Pyraminx</h2><p>R U R′ U′</p><h2>5x5</h2><p>R U R′ U′</p>",
+    "<title>Cube patterns</title><h2>2x2</h2><p>R U R′ U′</p><h2>6x6</h2><p>R U R′ U′</p><h2>Pyraminx</h2><p>R U R′ U′</p><h2>5x5</h2><p>R U R′ U′</p><h2>7x7</h2><p>3Rw U 4F′</p>",
   );
   try {
-    assert.equal(links(x).length, 2);
+    assert.equal(links(x).length, 4);
     assert.ok(links(x)[0].href.includes("size=2"));
-    assert.ok(links(x)[1].href.includes("size=5"));
+    assert.ok(links(x)[1].href.includes("size=6"));
+    assert.ok(links(x)[2].href.includes("size=5"));
+    assert.ok(links(x)[3].href.includes("size=7"));
   } finally {
     x.dom.window.close();
   }
@@ -583,16 +585,20 @@ test("without a valid marker, spec or format the visible Moves line is scanned a
   }
 });
 
-test("6x6 and 7x7 fingerprints and empty histories create no badge and no duplicate from the line", async (t) => {
-  for (const value of [
-    { size: 6, moves: "2L' 2R U2" },
-    { size: 7, moves: "2L' 2R U2" },
-    { size: 3, moves: "" },
-  ]) {
-    const x = await setup(app(value));
+test("6x6 and 7x7 fingerprints link their inner layers with the stated size and no duplicate from the line", async (t) => {
+  for (const size of [6, 7]) {
+    const x = await setup(app({ size, moves: "2L' 3Rw U2 2-4Fw" }));
     t.after(() => x.dom.window.close());
-    assert.equal(links(x).length, 0, JSON.stringify(value));
+    assert.equal(links(x).length, 1, String(size));
+    assert.equal(movesOf(links(x)[0]), "2L' 3Rw U2 2-4Fw");
+    assert.equal(sizeOf(links(x)[0]), String(size));
   }
+});
+
+test("an empty history creates no badge and no duplicate from the line", async (t) => {
+  const x = await setup(app({ size: 3, moves: "" }));
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 0);
 });
 
 test("a single move is linked because the data is explicit", async (t) => {

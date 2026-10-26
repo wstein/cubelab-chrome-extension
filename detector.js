@@ -22,7 +22,7 @@
       .replace(/[·•]/g, " ")
       .replace(/\u00a0/g, " ");
   const moveRE =
-    /^(?:[2-5]-[2-5][urfdlb]|[2-5][urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[URFDLBMESxyzurfdlb])(?:2'?|'2|3|'|i)?/;
+    /^(?:[2-7]-[2-7][urfdlb]|[2-7][urfdlb]|[2-7]-[2-7][URFDLB]w|[2-7]?[URFDLB]w|[2-7][URFDLB]|[URFDLBMESxyzurfdlb])(?:2'?|'2|3|'|i)?/;
   const sseMoveRE =
     /^(?:[CTNVMWS](?:[1-5](?:-[1-5])?)?)?[URFDLB](?:2['-]?|['-]2|3|['-])?/;
   const sseMarker = /[CTNVMWS](?:\d+(?:-\d+)?)?[URFDLB]/;
@@ -105,7 +105,7 @@
 
   function sseMove(token, size) {
     const [, family = "", first, last, face, suffix = ""] = token.match(
-      /^(?:([CTNVMWS])([1-5])?(?:-([1-5]))?)?([URFDLB])(.*)$/,
+      /^(?:([CTNVMWS])([1-7])?(?:-([1-7]))?)?([URFDLB])(.*)$/,
     );
     const turns = suffix.includes("2") ? 2 : /['-]|3/.test(suffix) ? -1 : 1;
     const ending = (turns) =>
@@ -173,11 +173,11 @@
       ? normalize(source).replace(/[.↗]/g, " ")
       : normalize(source)
           .replace(
-            /([URFDLB])([₂₃₄₅])/g,
-            (_, f, n) => "₂₃₄₅".indexOf(n) + 2 + f + "w",
+            /([URFDLB])([₂₃₄₅₆₇])/g,
+            (_, f, n) => "₂₃₄₅₆₇".indexOf(n) + 2 + f + "w",
           )
           .replace(
-            /(?<=[URFDLBMESxyzurfdlbw'i])-(?=[2-5URFDLBMESxyzurfdlb([])/g,
+            /(?<=[URFDLBMESxyzurfdlbw'i])-(?=[2-7URFDLBMESxyzurfdlb([])/g,
             " ",
           );
     let pos = 0,
@@ -257,7 +257,7 @@
           } else {
             let move = m[0]
               .replace(
-                /^([2-5](?:-[2-5])?)([urfdlb])/,
+                /^([2-7](?:-[2-7])?)([urfdlb])/,
                 (_, n, f) => n + f.toUpperCase() + "w",
               )
               .replace(/i$/, "'")
@@ -266,7 +266,7 @@
             let base = move.replace(/[2']$/, "");
             const layer = (
               /^[urfdlb]$/.test(base) ? base.toUpperCase() + "w" : base
-            ).match(/^(?:([2-5])(?:-([2-5]))?)?([URFDLB])(w)?$/);
+            ).match(/^(?:([2-7])(?:-([2-7]))?)?([URFDLB])(w)?$/);
             if (modernSize && layer) {
               const from = layer[2]
                 ? Number(layer[1])
@@ -284,15 +284,15 @@
               }
             }
             if (/[MES]/.test(base)) minSize = Math.max(minSize, 3);
-            if (/^[2-5]-[2-5]/.test(base)) {
+            if (/^[2-7]-[2-7]/.test(base)) {
               if (Number(base[0]) > Number(base[2])) throw Error("layer range");
               minSize = Math.max(minSize, Number(base[2]) + 1);
             } else if (/^[urfdlb]$/.test(base) || /w$/.test(base)) {
               minSize = Math.max(
                 minSize,
-                Number(base.match(/^[2-5]/)?.[0] || 2) + 1,
+                Number(base.match(/^[2-7]/)?.[0] || 2) + 1,
               );
-            } else if (/^[2-5]/.test(base))
+            } else if (/^[2-7]/.test(base))
               minSize = Math.max(minSize, Number(base[0]) + 1);
             part = [move];
           }
@@ -306,7 +306,7 @@
     try {
       const moves = seq();
       skip();
-      return pos === s.length && moves.length && minSize <= 5
+      return pos === s.length && moves.length && minSize <= 7
         ? { moves, minSize }
         : null;
     } catch {
@@ -565,6 +565,7 @@
       options.size &&
       ((options.size !== 3 &&
         options.size !== 5 &&
+        options.size !== 7 &&
         parsed.moves.some((m) => /^[MES]/.test(m))) ||
         parsed.minSize > options.size)
     )
@@ -600,7 +601,7 @@
     if (
       typeof text !== "string" ||
       text.length > 32000 ||
-      (options.size && ![2, 3, 4, 5].includes(options.size))
+      (options.size && ![2, 3, 4, 5, 6, 7].includes(options.size))
     )
       return [];
     const found = [];
@@ -659,7 +660,7 @@
     if (whole) add(text.indexOf(trim), text.indexOf(trim) + trim.length, whole);
     // Candidate runs bounded by prose; unmatched syntax is rejected, not repaired.
     const run =
-      /(?<![A-Za-z0-9])(?:[2-5](?:-[2-5])?[urfdlb]|[2-5]-[2-5][URFDLB]w|[2-5]?[URFDLB]w|[2-5][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbsamcqCTNVMWSwi₂₃₄₅2-5\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
+      /(?<![A-Za-z0-9])(?:[2-7](?:-[2-7])?[urfdlb]|[2-7]-[2-7][URFDLB]w|[2-7]?[URFDLB]w|[2-7][URFDLB]|[CTNVMWS](?:[0-9]+(?:-[0-9]+)?)?[URFDLB]|[URFDLBMESxyzurfdlb]|[([]|<)(?:[URFDLBMESxyzurfdlbsamcqCTNVMWSwi₂₃₄₅₆₇2-7\-'’‘′´`²\s.·•↗*<>()[\],:0-9]*)(?![A-Za-z0-9])/g;
     for (const m of text.matchAll(run)) {
       let raw = m[0].trimEnd();
       // A numbered prose list can begin with an SSE family letter ("1. Write"),
@@ -738,9 +739,8 @@
       return null;
     const count = moves ? moves.split(" ").length : 0;
     if (count > MAX) return null;
-    // Sizes 6 and 7 are valid data that this extension cannot link, like the
-    // 6x6/7x7 pages it already skips. An empty history has nothing to link.
-    if (!count || size > 5) return { size, moves, match: null };
+    // An empty history has nothing to link.
+    if (!count) return { size, moves, match: null };
     const parsed = parseMoves(moves, size);
     if (!parsed || parsed.moves.length !== count) return null;
     return {
