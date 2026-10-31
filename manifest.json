@@ -21,7 +21,7 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "exclude_matches": ["https://wstein.github.io/cubelab/*"],
-      "js": ["detector.js", "content.js"],
+      "js": ["orbit64v2.js", "detector.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
     }

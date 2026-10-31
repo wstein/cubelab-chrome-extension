@@ -1,4 +1,4 @@
-importScripts("detector.js", "settings.js");
+importScripts("orbit64v2.js", "detector.js", "settings.js");
 const settingsStore = CubeLabSettings.createStore(chrome.storage.local);
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (message.type !== "settings:update") return;

@@ -40,7 +40,7 @@ async function setup(
       },
     },
   };
-  for (const file of ["detector.js", "content.js"])
+  for (const file of ["orbit64v2.js", "detector.js", "content.js"])
     w.eval(fs.readFileSync(path.join(__dirname, "..", file), "utf8"));
   await delay(10);
   return {

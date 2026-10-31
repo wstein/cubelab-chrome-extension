@@ -743,3 +743,96 @@ test("6x6 and 7x7 modern notation is detected, sized and checked against the siz
   assert.equal(D.classify("M U E", { size: 7 }).size, 7);
   assert.equal(D.classify("M U E", { size: 6 }), null);
 });
+
+const v2vectors = require("./fixtures/orbit64v2-vectors.cjs");
+const v2size = (id) => (id < 2 ? 2 : id < 6 ? 3 : 4 + Math.floor((id - 6) / 4));
+const v2model = (id) =>
+  id >= 2 && (id < 6 ? id - 2 : (id - 6) % 4) & 2 ? "picture" : "color";
+const v2pose = (id) => ((id < 6 ? id : id - 6) & 1 ? "framed" : "canonical");
+test("Orbit64 V2 reference vectors are detected only with the orbit64v2 label", () => {
+  for (const [id, token] of v2vectors) {
+    const label = `orbit64v2: ${token}`;
+    const [hit, ...rest] = detect(`See ${label} here.`);
+    assert.equal(rest.length, 0, `entry ${id}`);
+    assert.equal(hit.kind, "state");
+    assert.equal(hit.format, "Orbit64 V2 candidate");
+    assert.equal(hit.size, v2size(id));
+    assert.equal(hit.notation, token);
+    assert.deepEqual(hit.orbit64v2, {
+      id,
+      model: v2model(id),
+      pose: v2pose(id),
+    });
+    assert.equal(hit.source, label);
+    assert.equal(hit.start, 4);
+    assert.equal(hit.end, 4 + label.length);
+    for (const found of [D.detect(token), detect(token)])
+      assert.equal(
+        found.some((r) => /^Orbit64/.test(r.format ?? "")),
+        false,
+        `unlabeled entry ${id}`,
+      );
+    assert.equal(
+      detect(`Orbit64: ${token}`).some(
+        (r) => r.format === "Orbit64 V2 candidate",
+      ),
+      false,
+    );
+  }
+});
+test("Orbit64 V2 label accepts case and both separators", () => {
+  for (const text of [
+    "orbit64v2:AAAAA",
+    "ORBIT64V2 = AAAAA",
+    "Orbit64V2:\tAAAAA",
+    "x orbit64v2=AAAAA.",
+  ]) {
+    const [hit] = detect(text);
+    assert.equal(hit.format, "Orbit64 V2 candidate", text);
+    assert.equal(hit.size, 2);
+  }
+  assert.equal(detect("myorbit64v2: AAAAA").length, 0);
+  assert.equal(detect("orbit64v2 AAAAA").length, 0);
+});
+test("Orbit64 V2 tokens outside every registry range are not detected", () => {
+  for (const token of [
+    "A",
+    "AAA",
+    "A".repeat(43),
+    "A".repeat(700),
+    "AAAA".replace("A", "_"),
+    "____",
+    "_____",
+  ]) {
+    assert.equal(
+      detect(`orbit64v2: ${token}`).some(
+        (r) => r.format === "Orbit64 V2 candidate",
+      ),
+      false,
+      token,
+    );
+  }
+  // Entry 0 holds 3674160 states, so the value 3674160 is "OBAw" and is unallocated.
+  assert.equal(detect("orbit64v2: OBAw").length, 0);
+});
+test("Orbit64 V1 labeled tokens behave as before next to V2", () => {
+  const [hit] = detect("Orbit64: AAAAAAAAAAAA");
+  assert.equal(hit.format, "Orbit64 candidate");
+  assert.equal(hit.size, 3);
+  assert.equal(hit.source, "AAAAAAAAAAAA");
+  assert.equal(detect("Orbit64: Dummy")[0].size, 2);
+  assert.equal(detect("Orbit64: AAAA").length, 0);
+  const both = detect("Orbit64: AAAAA and orbit64v2: AAAAA");
+  assert.deepEqual(
+    both.map((r) => r.format),
+    ["Orbit64 candidate", "Orbit64 V2 candidate"],
+  );
+});
+test("Orbit64 V2 candidates go to CubeLab with their label like other states", () => {
+  const [hit] = detect("orbit64v2: AAAAA");
+  const url = new URL(D.makeURL(hit));
+  const params = new URLSearchParams(url.hash.slice(1));
+  assert.equal(url.origin + url.pathname, "https://wstein.github.io/cubelab/");
+  assert.equal(params.get("alg"), "orbit64v2: AAAAA");
+  assert.equal(params.get("size"), "2");
+});
