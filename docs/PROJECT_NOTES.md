@@ -216,7 +216,8 @@ browser tests. All original
 34 tests remain. On Node 26.8.1, detector coverage is 100% of lines and functions
 and 95.62% of branches, compared with 100%/100%/92.27% before the changes.
 `npm run test:coverage` enforces 100% lines, 100% functions, and 93% branches
-for `detector.js`. The gate does not claim coverage of scripts evaluated by jsdom.
+for `detector.js`; a second invocation enforces 100% lines, functions and
+branches for `orbit64v2.js`. The gates do not claim coverage of scripts evaluated by jsdom.
 
 Browser tests follow the [Playwright extension-testing workflow](https://playwright.dev/docs/chrome-extensions)
 with the pinned Chromium build and an isolated temporary profile. Only that test

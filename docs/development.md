@@ -42,8 +42,9 @@ See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the quality baseline and implementa
 The unit/DOM suite has 122 tests covering detection, URL construction, concurrent
 settings updates, worker messages, selection handling, and incremental DOM
 updates. The detector coverage gate requires 100% of lines and functions and at
-least 93% of branches; the measured branch coverage is 98.55%. This gate covers
-`detector.js`, not code evaluated in simulated browser contexts.
+least 93% of branches; the measured branch coverage is 98.57%. A second,
+separate gate requires 100% of lines, functions and branches for the Orbit64 V2
+registry in `orbit64v2.js`. The gates cover those two files, not code evaluated in simulated browser contexts.
 
 Twenty-seven Chromium tests (eleven of them for the CubeAssembler fingerprint) cover CubeLab self-exclusion, original notation delegation on the reported Revenge URL, numbered SSE Setup links, SiGN/SSE size selection, installation, real inline visibility, responsive CSS,
 manual rescans, stable DOM nodes, dynamic content, toolbar permission granting,
