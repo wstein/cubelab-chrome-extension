@@ -649,9 +649,12 @@
         });
     }
     // Orbit64 V2 tokens look like arbitrary text and V1 decoders misread them, so
-    // only the label `orbit64v2:` selects them, and only inside a registry range.
+    // only the label `orbit64v2:` selects them, the token must end at whitespace
+    // or sentence punctuation (no longer string with a valid prefix), and only inside a registry range.
     // The label stays in the span, so CubeLab receives it with the token.
-    for (const m of text.matchAll(/\borbit64v2\s*[:=]\s*([A-Za-z0-9_-]+)/gi)) {
+    for (const m of text.matchAll(
+      /\borbit64v2\s*[:=]\s*([A-Za-z0-9_-]+)(?=[.,;:!?)\]}"'’”]*(?:\s|$))/gi,
+    )) {
       const entry = orbit64v2.lookup(m[1]);
       if (entry)
         add(m.index, m.index + m[0].length, {

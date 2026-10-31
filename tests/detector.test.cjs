@@ -836,3 +836,32 @@ test("Orbit64 V2 candidates go to CubeLab with their label like other states", (
   assert.equal(params.get("alg"), "orbit64v2: AAAAA");
   assert.equal(params.get("size"), "2");
 });
+
+test("Orbit64 V2 token must end at whitespace or sentence punctuation", () => {
+  for (const text of [
+    "orbit64v2: AAAA/BBBB",
+    "orbit64v2: AAAA+x",
+    "orbit64v2: AAAA=",
+    "orbit64v2: AAAA\u00e9",
+    "orbit64v2: AAAA.x",
+    "orbit64v2: AAAA)x",
+  ])
+    assert.equal(
+      detect(text).filter((r) => r.format === "Orbit64 V2 candidate").length,
+      0,
+      text,
+    );
+  for (const text of [
+    "orbit64v2: AAAA.",
+    "orbit64v2: AAAA,",
+    "(orbit64v2: AAAA)",
+    "orbit64v2: AAAA. Next",
+    "see orbit64v2: AAAA!\n",
+    "orbit64v2: AAAA",
+  ]) {
+    const [hit] = detect(text);
+    assert.equal(hit.format, "Orbit64 V2 candidate", text);
+    assert.equal(hit.notation, "AAAA");
+    assert.equal(hit.source, "orbit64v2: AAAA");
+  }
+});
