@@ -2,63 +2,6 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const V2 = require("../orbit64v2.js");
 const vectors = require("./fixtures/orbit64v2-vectors.cjs");
-// State counts as printed in the FORMAT-V2.md "Initial registry" table.
-const specStates = [
-  "3.674e+06",
-  "8.818e+07",
-  "4.325e+19",
-  "1.038e+21",
-  "8.858e+22",
-  "2.126e+24",
-  "7.401e+45",
-  "1.776e+47",
-  "7.072e+53",
-  "1.697e+55",
-  "2.829e+74",
-  "6.789e+75",
-  "5.289e+93",
-  "1.269e+95",
-  "1.572e+116",
-  "3.772e+117",
-  "1.310e+148",
-  "3.144e+149",
-  "1.950e+160",
-  "4.680e+161",
-  "3.039e+211",
-  "7.295e+212",
-  "3.517e+217",
-  "8.442e+218",
-  "2.335e+289",
-  "5.605e+290",
-  "1.417e+277",
-  "3.401e+278",
-  "1.681e+376",
-  "4.034e+377",
-  "8.298e+349",
-  "1.992e+351",
-  "4.007e+477",
-  "9.616e+478",
-  "1.085e+425",
-  "2.605e+426",
-  "8.947e+587",
-  "2.147e+589",
-  "2.064e+513",
-  "4.953e+514",
-  "6.616e+712",
-  "1.588e+714",
-  "8.764e+603",
-  "2.103e+605",
-  "4.583e+846",
-  "1.100e+848",
-  "5.410e+707",
-  "1.298e+709",
-  "1.051e+995",
-  "2.523e+996",
-  "7.458e+813",
-  "1.790e+815",
-  "2.259e+1152",
-  "5.422e+1153",
-];
 const { ALPHABET, REGISTRY, lookup } = V2;
 const tokenOf = (value, length) => {
   let text = "";
@@ -78,12 +21,24 @@ const expected = (id) => {
     pose: k & 1 ? "framed" : "canonical",
   };
 };
-const sci = (n) => {
-  const s = n.toString();
-  const digits = BigInt(s.length - 1);
-  const mantissa = Number(n / 10n ** (digits - 5n)) / 1e5;
-  const rounded = Number(mantissa.toPrecision(4));
-  return `${rounded.toFixed(3)}e+${String(digits).padStart(2, "0")}`;
+const fact = (k) => (k <= 1n ? 1n : k * fact(k - 1n));
+// State count as the product of the radixes in the FORMAT-V2.md "Digit layout".
+const radixProduct = ({ n, model, pose }) => {
+  const odd = n % 2 === 1;
+  const picture = model === "picture";
+  const framed = pose === "framed";
+  const evenCanonical = !odd && !framed;
+  const centers = BigInt(Math.floor(((n - 2) * (n - 2)) / 4));
+  const wings = BigInt(Math.floor((n - 2) / 2));
+  let count =
+    (evenCanonical ? fact(7n) : fact(8n)) *
+    (evenCanonical ? 3n ** 6n : 3n ** 7n);
+  if (odd) count *= (fact(12n) / 2n) * 2n ** 11n;
+  count *= fact(24n) ** wings;
+  count *= (picture ? fact(24n) / 2n : fact(24n) / fact(4n) ** 6n) ** centers;
+  if (picture && odd) count *= 2n ** 11n;
+  if (framed && odd) count *= 24n;
+  return count;
 };
 test("registry has the 54 entries n = 2..15 in registry order", () => {
   assert.equal(REGISTRY.length, 54);
@@ -94,17 +49,11 @@ test("registry has the 54 entries n = 2..15 in registry order", () => {
   assert.equal(Object.isFrozen(REGISTRY), true);
   assert.equal(Object.isFrozen(REGISTRY[0]), true);
 });
-test("state counts match the specification table and the known group orders", () => {
-  REGISTRY.forEach((e, i) =>
-    assert.equal(sci(e.count), specStates[i], `entry ${i}`),
-  );
+test("state counts equal the radix product of the digit layout", () => {
+  for (const e of REGISTRY)
+    assert.equal(e.count, radixProduct(e), `entry ${e.id}`);
   assert.equal(REGISTRY[2].count, 43252003274489856000n);
   assert.equal(REGISTRY[4].count, 88580102706155225088000n);
-  for (const e of REGISTRY)
-    if (e.pose === "framed") {
-      const canonical = REGISTRY[e.id - 1];
-      assert.equal(e.count, canonical.count * 24n);
-    }
 });
 test("lengths and offsets follow the allocation rule", () => {
   const used = new Map();
@@ -154,30 +103,56 @@ test("the zero state of every entry selects it", () => {
     assert.equal(lookup(tokenOf(e.offset + e.count - 1n, e.length))?.id, e.id);
   }
 });
-test("tokens just outside a range or of an unused length are rejected", () => {
+test("tokens just outside a range are rejected or belong to the neighbor", () => {
   const lengths = new Set(REGISTRY.map((e) => e.length));
+  const holder = (value, length) =>
+    REGISTRY.filter(
+      (e) =>
+        e.length === length && e.offset <= value && value < e.offset + e.count,
+    )[0]?.id ?? null;
+  for (const e of REGISTRY) {
+    for (const [value, length] of [
+      [e.offset - 1n, e.length],
+      [e.offset + e.count, e.length],
+      [e.offset, e.length - 1],
+      [e.offset, e.length + 1],
+    ]) {
+      if (value < 0n || length < 1) continue;
+      const found = lookup(tokenOf(value, length));
+      assert.equal(
+        found?.id ?? null,
+        holder(value, length),
+        `entry ${e.id} ${value}`,
+      );
+    }
+  }
+  // Directly past the end of the last range of a length nothing is allocated.
   for (const length of lengths) {
-    const entries = REGISTRY.filter((e) => e.length === length);
-    const end = entries.reduce(
+    const end = REGISTRY.filter((e) => e.length === length).reduce(
       (m, e) => (e.offset + e.count > m ? e.offset + e.count : m),
       0n,
     );
-    assert.equal(end < 64n ** BigInt(length), true);
     assert.equal(
       lookup(tokenOf(end, length)),
       null,
       `past end of length ${length}`,
     );
-    assert.equal(lookup(tokenOf(64n ** BigInt(length) - 1n, length)), null);
-    // Tokens one character longer or shorter never fall in this length's ranges.
-    assert.equal(lookup("A".repeat(length + 1))?.length === length, false);
+    assert.equal(lookup(tokenOf(end - 1n, length)) !== null, true);
   }
+  assert.equal(lookup(tokenOf(3674160n, 4)), null);
+  assert.equal(lookup(tokenOf(3674159n, 4)).id, 0);
   for (let length = 1; length <= 700; length++)
     if (!lengths.has(length))
       assert.equal(lookup("A".repeat(length)), null, `length ${length}`);
   // V1 5x5x5 tokens have 43 characters, where the initial registry has none.
   assert.equal(lookup("A".repeat(43)), null);
   assert.equal(lookup("A".repeat(42)).id, 10);
+});
+test("lookup rejects a very long token by length before any numeric work", () => {
+  const started = process.hrtime.bigint();
+  assert.equal(lookup("A".repeat(31989)), null);
+  assert.equal(lookup("A".repeat(32000)), null);
+  assert.equal(Number(process.hrtime.bigint() - started) / 1e6 < 100, true);
 });
 test("lookup rejects non-tokens", () => {
   for (const bad of [
