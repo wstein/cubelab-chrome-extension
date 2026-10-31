@@ -9,7 +9,7 @@ access is required.
 ## Automated browser validation
 
 The extension is now tested in Playwright's Chromium with its actual manifest,
-service worker, storage, content scripts, popup, and options page. Fourteen tests use
+service worker, storage, content scripts, popup, and options page. Twenty-seven tests use
 local fixtures for CSS visibility, responsive layout, DOM updates, stable badge
 nodes, toolbar permission granting, concurrent settings, 4×4/5×5 widgets, 6×6/7×7 fingerprints,
 context-menu registration, destination URLs, and CubeLab self-exclusion by

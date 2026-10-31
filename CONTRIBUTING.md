@@ -20,9 +20,11 @@ npx playwright install chromium
 npm run test:browser
 ```
 
+See [docs/development.md](docs/development.md) for details.
+
 - The extension has no build step and no runtime dependencies. npm packages are development-only.
 - Add a regression test alongside every behaviour change. The detector coverage gate (100% lines and functions, at least 93% branches) must keep passing.
-- Original notation is delegated to CubeLab unchanged apart from whitespace cleanup. Please do not add rewriting or normalisation; see [README.md](README.md) and [PROJECT_NOTES.md](PROJECT_NOTES.md).
+- Original notation is delegated to CubeLab unchanged apart from whitespace cleanup. Please do not add rewriting or normalisation; see [docs/notation.md](docs/notation.md) and [docs/PROJECT_NOTES.md](docs/PROJECT_NOTES.md).
 - Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 
 ## Pull requests

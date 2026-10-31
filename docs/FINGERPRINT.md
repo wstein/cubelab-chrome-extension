@@ -105,4 +105,4 @@ or the 3D view (the app removes it in the 2D view) removes the badge.
 For this feature the extension reads only the two elements above, locally,
 and sends nothing anywhere. The only data that leaves the page is what the
 user opens by clicking the badge: the moves, in the destination URL fragment,
-as for every other badge ([PRIVACY.md](PRIVACY.md)). No permission is added.
+as for every other badge ([PRIVACY.md](../PRIVACY.md)). No permission is added.

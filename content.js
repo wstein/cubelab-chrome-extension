@@ -15,7 +15,7 @@
     ownedLinks = new Set(),
     floatingRanges = new Map();
   const dirtyRoots = new Set();
-  // CubeAssembler fingerprint (FINGERPRINT.md): at most one badge, owned here.
+  // CubeAssembler fingerprint (docs/FINGERPRINT.md): at most one badge, owned here.
   let fingerprintBadge = null,
     fingerprintKey = "",
     fingerprintRegion = null;

@@ -695,7 +695,7 @@
     }
     return found.sort((a, b) => a.start - b.start);
   }
-  // CubeAssembler fingerprint (see FINGERPRINT.md): strict, bounded, read-only.
+  // CubeAssembler fingerprint (see docs/FINGERPRINT.md): strict, bounded, read-only.
   const FINGERPRINT_SPEC = 1;
   const FINGERPRINT_MAX_CHARS = 16384;
   const FINGERPRINT_FORMAT = "layer-prefix/v1";
