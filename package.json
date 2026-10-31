@@ -1,6 +1,12 @@
 {
   "name": "cubelab-linker",
   "version": "0.2.2",
+  "description": "Chrome extension that links cube notation on web pages to CubeLab",
+  "license": "EUPL-1.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wstein/cubelab-chrome-extension.git"
+  },
   "private": true,
   "scripts": {
     "format": "prettier --write .",

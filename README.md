@@ -1,5 +1,13 @@
 # CubeLab Linker — Chrome extension
 
+[![CI](https://github.com/wstein/cubelab-chrome-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/wstein/cubelab-chrome-extension/actions/workflows/ci.yml)
+[![License: EUPL-1.2](https://img.shields.io/badge/license-EUPL--1.2-blue.svg)](LICENSE)
+![Version 0.2.2](https://img.shields.io/badge/version-0.2.2-green.svg)
+![Manifest V3](https://img.shields.io/badge/manifest-V3-4285F4?logo=googlechrome&logoColor=white)
+![Chrome 109+](https://img.shields.io/badge/chrome-109%2B-4285F4?logo=googlechrome&logoColor=white)
+![Cubes 2x2 to 7x7](https://img.shields.io/badge/cubes-2%C3%972%20to%207%C3%977-orange.svg)
+![No telemetry](https://img.shields.io/badge/telemetry-none-brightgreen.svg)
+
 Adds small CubeLab links, marked with a consistent external-link icon, next to cube notation on ordinary web pages. Supports 2×2–7×7 cubes for moves (SSE and state formats: 2×2–5×5). Manifest V3, no build step, no runtime dependencies, no telemetry.
 
 ## Install
@@ -182,3 +190,7 @@ contact a server in the background. Default links carry notation in the URL
 fragment; the destination's JavaScript can read it. Custom templates may put
 notation in a query or path, which is sent to the destination server. The
 destination's privacy policy applies. See [PRIVACY.md](PRIVACY.md).
+
+## License
+
+Licensed under the [European Union Public Licence v. 1.2](LICENSE) (EUPL-1.2).
