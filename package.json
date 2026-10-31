@@ -14,8 +14,8 @@
     "lint": "eslint .",
     "test": "node --test tests/*.test.cjs",
     "test:browser": "playwright test",
-    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=detector.js --test-coverage-lines=100 --test-coverage-branches=93 --test-coverage-functions=100 tests/detector.test.cjs tests/sse.test.cjs",
-    "test:detector": "node --test tests/detector.test.cjs tests/sse.test.cjs"
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=detector.js --test-coverage-include=orbit64v2.js --test-coverage-lines=100 --test-coverage-branches=93 --test-coverage-functions=100 tests/detector.test.cjs tests/sse.test.cjs tests/orbit64v2.test.cjs",
+    "test:detector": "node --test tests/detector.test.cjs tests/sse.test.cjs tests/orbit64v2.test.cjs"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
