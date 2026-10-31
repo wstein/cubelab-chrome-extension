@@ -401,9 +401,11 @@
       });
     }),
   );
+  const LENGTHS = new Set(REGISTRY.map((e) => e.length));
   // The registry entry whose length and value range hold the token, else null.
   function lookup(token) {
-    if (typeof token !== "string" || !token) return null;
+    // Reject by length first: no BigInt work for strings no entry can hold.
+    if (typeof token !== "string" || !LENGTHS.has(token.length)) return null;
     let value = 0n;
     for (const ch of token) {
       const digit = ALPHABET.indexOf(ch);
