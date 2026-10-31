@@ -13,6 +13,7 @@
       "https://wstein.github.io/cubelab/workbench#moves={notation}",
     algTemplate: "https://wstein.github.io/cubelab/#alg={notation}",
   });
+  const orbit64v2 = root.CubeLabOrbit64V2 || require("./orbit64v2.js");
   const MAX = 2000;
   const cleanWhitespace = (source) => source.replace(/\s+/gu, " ").trim();
   const normalize = (s) =>
@@ -645,6 +646,21 @@
           notation: token,
           size,
           confidence: "medium",
+        });
+    }
+    // Orbit64 V2 tokens look like arbitrary text and V1 decoders misread them, so
+    // only the label `orbit64v2:` selects them, and only inside a registry range.
+    // The label stays in the span, so CubeLab receives it with the token.
+    for (const m of text.matchAll(/\borbit64v2\s*[:=]\s*([A-Za-z0-9_-]+)/gi)) {
+      const entry = orbit64v2.lookup(m[1]);
+      if (entry)
+        add(m.index, m.index + m[0].length, {
+          kind: "state",
+          format: "Orbit64 V2 candidate",
+          notation: m[1],
+          size: entry.n,
+          confidence: "medium",
+          orbit64v2: { id: entry.id, model: entry.model, pose: entry.pose },
         });
     }
     // Long facelet runs before algorithms. Spaces/newlines between faces are allowed.

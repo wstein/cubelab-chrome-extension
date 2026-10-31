@@ -128,7 +128,7 @@ async function openUI(file, harness, tabURL = "https://example.com/") {
       },
     },
   };
-  for (const script of ["detector", "settings", file])
+  for (const script of ["orbit64v2", "detector", "settings", file])
     await w.eval(
       fs.readFileSync(path.join(__dirname, "..", `${script}.js`), "utf8"),
     );
