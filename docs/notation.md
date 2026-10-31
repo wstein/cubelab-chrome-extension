@@ -23,7 +23,7 @@ text or the tester input. Parsing below is only for detection and metadata.
 | Complete ACube positional states                                | Recognize 12 distinct edges + 8 distinct corners                            |
 | `cp: …; co: …` with optional `ep: …; eo: …`                     | Check coordinate lengths, ranges and permutation uniqueness                 |
 | Explicitly labelled `Orbit64: …`                                | Identify token-width candidates and send to CubeLab for actual validation   |
-| Explicitly labelled `orbit64v2: …` (or `=`)                     | Match a V2 registry range by length; send label and token to CubeLab        |
+| Explicitly labeled `orbit64v2: …` (or `=`)                      | Match a V2 registry range by length; send label and token to CubeLab        |
 
 Orbit64 V2 tokens are a separate, incompatible format and are never detected without their `orbit64v2:` label, because a V1 decoder can misread an unlabeled one. A labeled token is reported as `Orbit64 V2 candidate` only when its length and value fall in a registry range of the V2 format draft (`FORMAT-V2.md` in flix-orbit64; cube sizes 2–15); nothing is decoded or validated here. CubeLab has no V2 parameter yet, so the link uses the existing `alg` mechanism with the label kept in the text (`#alg=orbit64v2: <token>`); the format value stays inside the extension.
 

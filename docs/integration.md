@@ -21,6 +21,10 @@ Reviewed CubeLab source at commit `e8b8ef45b348a91104b7402238556296eeac03ff` on 
 
 Moves go to `/cubelab/workbench#moves=…`; states/cycles go to `/cubelab/#alg=…`. Nondefault sizes and known dialects are carried in the fragment. Twizzle widget setup algorithms are carried in `alg` alongside `moves`. CubeLab-specific parameters are added only for the default CubeLab host/path, not arbitrary custom destinations. `{notation}` and optional `{size}` placeholders support custom URL templates.
 
+## Orbit64 V2 candidates
+
+A token labeled `orbit64v2: <token>` (or `=`) that falls in a registry range is sent as `#alg=<label as written>: <token>`, for example `#alg=orbit64v2: AAAAA`, with whitespace cleaned up like all other notation. The label stays so that a V1 decoder cannot take the token for a V1 state. The `size` fragment parameter carries the cube size of the registry entry. CubeLab does not parse the label yet and caps the size at 2..5, so V2 badges are forward-looking until CubeLab supports them. The link format will not change when it does.
+
 ## CubeLab self-exclusion
 
 The official `wstein.github.io/cubelab/` path is excluded in the manifest. A
