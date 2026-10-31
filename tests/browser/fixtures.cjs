@@ -56,6 +56,8 @@ const test = base.extend({
     try {
       await use(`http://127.0.0.1:${server.address().port}`);
     } finally {
+      // Chromium keeps connections alive; close() alone waits for them.
+      server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
     }
   },
