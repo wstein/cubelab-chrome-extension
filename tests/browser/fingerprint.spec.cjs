@@ -68,7 +68,7 @@ for (const [name, options] of [
   ["no marker", { head: "" }],
   [
     "unsupported format",
-    { json: { size: 4, moves: "R U F", format: "layer-prefix/v2" } },
+    { json: { size: 4, moves: "R U F", format: "layer-prefix/v3" } },
   ],
   ["size out of range", { json: { size: 9, moves: "R U F" } }],
   ["moves outside the grammar", { json: { size: 4, moves: "R U Q" } }],
