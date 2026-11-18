@@ -718,11 +718,32 @@
   const FINGERPRINT_SPEC = 1;
   const FINGERPRINT_MAX_CHARS = 16384;
   const FINGERPRINT_FORMAT = "layer-prefix/v1";
+  const FINGERPRINT_FORMAT_V2 = "layer-prefix/v2";
   const fingerprintTurn =
     "(?:(?:[2-7]-[2-7]|[2-7])?[URFDLB]w?['2]?|[xyz]['2]?)";
   const fingerprintMoves = new RegExp(
     `^(?:${fingerprintTurn}(?: ${fingerprintTurn})*)?$`,
   );
+  // layer-prefix/v2: layer numbers 2 to 15 (one or two digits, no leading zero).
+  const layerV2 = "(?:1[0-5]|[2-9])";
+  const fingerprintTurnV2 = `(?:(?:${layerV2}-${layerV2}|${layerV2})?[URFDLB]w?['2]?|[xyz]['2]?)`;
+  const fingerprintMovesV2 = new RegExp(
+    `^(?:${fingerprintTurnV2}(?: ${fingerprintTurnV2})*)?$`,
+  );
+  const fingerprintLayersV2 = /^(?:(\d+)-(\d+)|(\d+))?[URFDLB]/;
+  // Layers a v2 turn names must exist on the cube: every number is at most
+  // the size and a range runs from the lower to the higher layer.
+  function fingerprintLayersFit(moves, size) {
+    let highest = 2;
+    for (const turn of moves.split(" ")) {
+      const [, from, to, one] = turn.match(fingerprintLayersV2) || [];
+      const numbers = [from, to, one].filter(Boolean).map(Number);
+      if (numbers.some((n) => n > size) || (to && Number(from) > Number(to)))
+        return 0;
+      highest = Math.max(highest, ...numbers);
+    }
+    return highest;
+  }
   function parseFingerprintMarker(content) {
     if (typeof content !== "string" || content.length > 512) return null;
     const pairs = new Map();
@@ -747,19 +768,38 @@
     }
     if (!data || typeof data !== "object" || Array.isArray(data)) return null;
     const { size, moves, format } = data;
+    const v2 = format === FINGERPRINT_FORMAT_V2;
     if (
-      format !== FINGERPRINT_FORMAT ||
+      (format !== FINGERPRINT_FORMAT && !v2) ||
       !Number.isInteger(size) ||
       size < 2 ||
-      size > 7 ||
+      size > (v2 ? 15 : 7) ||
       typeof moves !== "string" ||
-      !fingerprintMoves.test(moves)
+      !(v2 ? fingerprintMovesV2 : fingerprintMoves).test(moves)
     )
       return null;
     const count = moves ? moves.split(" ").length : 0;
     if (count > MAX) return null;
     // An empty history has nothing to link.
     if (!count) return { size, moves, match: null };
+    if (v2) {
+      // The extension's own parser stops at 7x7, so v2 turns are checked here.
+      const highest = fingerprintLayersFit(moves, size);
+      if (!highest) return null;
+      return {
+        size,
+        moves,
+        match: {
+          kind: "moves",
+          notation: moves,
+          size,
+          lowercaseMode: "Wide",
+          minSize: highest,
+          confidence: "high",
+          source: moves,
+        },
+      };
+    }
     const parsed = parseMoves(moves, size);
     if (!parsed || parsed.moves.length !== count) return null;
     return {
