@@ -35,7 +35,8 @@ Destination parser differences are not worked around by rewriting notation.
 [CubeAssembler](https://github.com/wstein/cube-assembler) publishes a meta marker
 and a JSON moves block for this extension. When both are valid, the extension
 links the block's moves and size and does not scan the Moves line next to it;
-otherwise it scans the page as for any site. Sizes 2 to 7 are linked. See
+otherwise it scans the page as for any site. Sizes 2 to 7 (`layer-prefix/v1`)
+and 2 to 15 (`layer-prefix/v2`) are linked. See
 [FINGERPRINT.md](FINGERPRINT.md). The Chromium tests use a local fixture page
 shaped like the app, not the live deployment.
 
