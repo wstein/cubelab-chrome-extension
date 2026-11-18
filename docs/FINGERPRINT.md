@@ -71,7 +71,9 @@ The producer writes `layer-prefix/v2` for cubes above 7×7 (sizes 8 to 15). Its
 grammar is the one below with layer numbers of one or two digits, 2 to 15 (no
 leading zero): `10R`, `12-14Uw'`, `15L2`, `10-12Rw`. Digits before the face
 letter are layers; the only digit after it is the amount `2`. A `v2` block is
-also accepted for sizes 2 to 7 and then reads like `v1`.
+also accepted for sizes 2 to 7. It is checked by the rule below, not by the
+`v1` parser, so it also accepts a range without `w` (`2-3R`), which the
+producer schema allows as text and `v1` rejects.
 
 The extension's move parser stops at 7×7, so a `v2` block is checked by its own
 rule: every layer number is at most `size` and a range `A-B` has `A` not above

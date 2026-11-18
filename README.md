@@ -10,7 +10,7 @@
 
 A Chrome extension that finds Rubik's Cube notation on web pages and adds a small link that opens it in [CubeLab](https://wstein.github.io/cubelab/).
 
-- Works on 2×2 to 7×7 cubes (moves); states and SSE notation on 2×2 to 5×5
+- Works on 2×2 to 7×7 cubes (moves; CubeAssembler fingerprints up to 15×15); states and SSE notation on 2×2 to 5×5
 - Runs locally. No telemetry, no accounts, no runtime dependencies
 
 ## Quick start
