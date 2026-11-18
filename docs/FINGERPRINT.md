@@ -4,7 +4,8 @@ CubeLab Linker reads a machine-readable hint that the web app
 [CubeAssembler](https://github.com/wstein/cube-assembler) publishes, instead of
 scraping the visible "Moves: ..." line of its 3D view. The producer side is
 described in that repository's `docs/cubelab-fingerprint.md` and its JSON
-Schema `public/schemas/cubelab-fingerprint-v1.schema.json`. This page is the
+Schemas `public/schemas/cubelab-fingerprint-v1.schema.json` and
+`cubelab-fingerprint-v2.schema.json`. This page is the
 consumer side: exactly what the extension accepts and what it does with it.
 
 ## What the extension looks for
@@ -53,8 +54,8 @@ error is shown.
 | No block, wrong element type, or `type` is not `application/json`                                               | Nothing to read                              |
 | Block text longer than **16384 characters**                                                                     | Bounded input; checked before parsing        |
 | Not valid JSON, or not a JSON object                                                                            | Strict parse                                 |
-| `format` is missing or not exactly `layer-prefix/v1`                                                            | Only formats this extension can translate    |
-| `size` is not an integer from 2 to 7                                                                            | Out of the documented range                  |
+| `format` is missing or not exactly `layer-prefix/v1` or `layer-prefix/v2`                                       | Only formats this extension can translate    |
+| `size` is not an integer from 2 to 7 (`v1`) or from 2 to 15 (`v2`)                                              | Out of the documented range                  |
 | `moves` is not a string, has more than **2000** turns, or does not match the grammar below                      | Same bound as the extension's move expansion |
 | `moves` fails the extension's own move parser for `size` (for example a layer that the size does not have)      | Cannot be linked faithfully                  |
 
@@ -63,6 +64,23 @@ error is shown.
 `spec` rises only for a breaking change, so a higher `spec` is ignored until
 this extension learns it. Same `spec` with extra block fields or extra
 `key=value` pairs in the marker is fine: unknown fields and pairs are ignored.
+
+### Format `layer-prefix/v2`
+
+The producer writes `layer-prefix/v2` for cubes above 7×7 (sizes 8 to 15). Its
+grammar is the one below with layer numbers of one or two digits, 2 to 15 (no
+leading zero): `10R`, `12-14Uw'`, `15L2`, `10-12Rw`. Digits before the face
+letter are layers; the only digit after it is the amount `2`. A `v2` block is
+also accepted for sizes 2 to 7 and then reads like `v1`.
+
+The extension's move parser stops at 7×7, so a `v2` block is checked by its own
+rule: every layer number is at most `size` and a range `A-B` has `A` not above
+`B`. The link carries the producer's string unchanged, with the size from the
+block. `layer-prefix/v1` is read exactly as before (one-digit layers, size 2 to
+7); a `v1` block with a larger size or a two-digit layer is ignored.
+
+Whether CubeLab itself renders sizes above 7×7 is decided on its side; the
+extension only passes the moves and `size=N` on.
 
 ### Format `layer-prefix/v1`
 
