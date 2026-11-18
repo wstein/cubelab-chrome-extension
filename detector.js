@@ -794,6 +794,8 @@
           notation: moves,
           size,
           lowercaseMode: "Wide",
+          // The highest layer named (v1 matches carry that layer plus one);
+          // nothing reads minSize for a fingerprint match.
           minSize: highest,
           confidence: "high",
           source: moves,
