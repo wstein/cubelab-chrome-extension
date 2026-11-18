@@ -595,6 +595,36 @@ test("6x6 and 7x7 fingerprints link their inner layers with the stated size and 
   }
 });
 
+test("layer-prefix/v2 fingerprints link two-digit layers with the stated size and no duplicate from the line", async (t) => {
+  const moves = "10R 12-14Uw' 15L2 3Rw x";
+  const x = await setup(
+    app(
+      { size: 15, moves, format: "layer-prefix/v2" },
+      { line: "Moves: " + moves },
+    ),
+  );
+  t.after(() => x.dom.window.close());
+  assert.equal(links(x).length, 1);
+  assert.equal(links(x)[0].nextElementSibling.id, "cubelab-moves");
+  assert.equal(movesOf(links(x)[0]), moves);
+  assert.equal(sizeOf(links(x)[0]), "15");
+  assert.equal(
+    links(x)[0].getAttribute("aria-label"),
+    "Open 15×15 moves in CubeLab",
+  );
+});
+
+test("a v1 fingerprint with two-digit layers or a size above 7 creates no badge from the block", async (t) => {
+  for (const value of [
+    { size: 15, moves: "10R U F" },
+    { size: 10, moves: "2R" },
+  ]) {
+    const x = await setup(app(value, { line: "Moves: none" }));
+    t.after(() => x.dom.window.close());
+    assert.equal(links(x).length, 0, JSON.stringify(value));
+  }
+});
+
 test("an empty history creates no badge and no duplicate from the line", async (t) => {
   const x = await setup(app({ size: 3, moves: "" }));
   t.after(() => x.dom.window.close());

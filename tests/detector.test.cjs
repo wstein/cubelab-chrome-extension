@@ -627,6 +627,111 @@ test("fingerprint on 6x6 and 7x7 links wide, ranged and inner-layer moves", () =
   );
   assert.equal(D.parseFingerprintMoves(block({ size: 6, moves: "Q" })), null);
 });
+const blockV2 = (value) =>
+  JSON.stringify({ format: "layer-prefix/v2", ...value });
+test("fingerprint layer-prefix/v2 links two-digit layers on cubes up to 15x15", () => {
+  const moves = "10R 12-14Uw' 15L2 10Fw 3-10Bw2 Rw 2L x y2 z' 11-12Rw";
+  const parsed = D.parseFingerprintMoves(blockV2({ size: 15, moves }));
+  assert.equal(parsed.size, 15);
+  assert.equal(parsed.moves, moves);
+  assert.equal(parsed.match.kind, "moves");
+  assert.equal(parsed.match.size, 15);
+  assert.equal(parsed.match.source, moves);
+  const params = new URLSearchParams(
+    new URL(D.makeURL(parsed.match)).hash.slice(1),
+  );
+  assert.equal(params.get("moves"), moves);
+  assert.equal(params.get("size"), "15");
+  // The block is read as written: no turn is rewritten.
+  assert.equal(parsed.match.notation, moves);
+});
+test("fingerprint layer-prefix/v2 accepts what the producer writes on every size", () => {
+  for (let size = 2; size <= 15; size++) {
+    const turns = [];
+    for (const face of "URFDLB")
+      for (let depth = 1; depth < size; depth++) {
+        turns.push((depth > 1 ? depth : "") + face + "'");
+        for (let from = 1; from < depth; from++)
+          turns.push((from > 1 ? from + "-" : "") + depth + face + "w2");
+      }
+    // Chunks keep each block inside the 2000-turn limit.
+    for (let at = 0; at < turns.length; at += 1500) {
+      const moves = turns.slice(at, at + 1500).join(" ");
+      const parsed = D.parseFingerprintMoves(blockV2({ size, moves }));
+      assert.equal(parsed?.match.source, moves, String(size));
+      assert.equal(parsed.match.size, size);
+    }
+  }
+});
+test("fingerprint layer-prefix/v2 checks layers against the stated size", () => {
+  const bad = [
+    [10, "11R"],
+    [10, "2-11Rw"],
+    [10, "11Rw"],
+    [10, "12-10Rw"],
+    [10, "10-9Rw"],
+    [9, "10R"],
+    [15, "16R"],
+    [15, "1R"],
+    [15, "0R"],
+    [15, "010R"],
+    [15, "100R"],
+    [15, "10"],
+    [15, "10-Rw"],
+    [15, "1-2-3Rw"],
+    [15, "10R3"],
+    [15, "10R2'"],
+    [15, "10 R"],
+    [15, "R  U"],
+    [15, "M"],
+    [16, "R"],
+    [1, "R"],
+    [2.5, "R"],
+  ];
+  for (const [size, moves] of bad)
+    assert.equal(
+      D.parseFingerprintMoves(blockV2({ size, moves })),
+      null,
+      size + " " + moves,
+    );
+  // v2 also accepts the smaller sizes, written as in v1.
+  assert.equal(
+    D.parseFingerprintMoves(blockV2({ size: 3, moves: "R U'" })).match.size,
+    3,
+  );
+  assert.equal(
+    D.parseFingerprintMoves(blockV2({ size: 3, moves: "4R" })),
+    null,
+  );
+  assert.deepEqual(D.parseFingerprintMoves(blockV2({ size: 12, moves: "" })), {
+    size: 12,
+    moves: "",
+    match: null,
+  });
+  const long = Array(2000).fill("10R").join(" ");
+  assert.ok(D.parseFingerprintMoves(blockV2({ size: 10, moves: long })));
+  assert.equal(
+    D.parseFingerprintMoves(blockV2({ size: 10, moves: long + " 10R" })),
+    null,
+  );
+});
+test("fingerprint layer-prefix/v1 stays closed to two digits and sizes above 7", () => {
+  assert.equal(D.parseFingerprintMoves(block({ size: 10, moves: "R" })), null);
+  assert.equal(D.parseFingerprintMoves(block({ size: 8, moves: "2R" })), null);
+  assert.equal(D.parseFingerprintMoves(block({ size: 7, moves: "10R" })), null);
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 7, moves: "2-10Rw" })),
+    null,
+  );
+  assert.equal(
+    D.parseFingerprintMoves(block({ size: 7, moves: "1" + "0R" })),
+    null,
+  );
+  assert.equal(
+    D.parseFingerprintMoves(blockV2({ size: 7, moves: "7R" })).match.size,
+    7,
+  );
+});
 test("fingerprint with no moves is valid and has no match", () => {
   assert.deepEqual(D.parseFingerprintMoves(block({ size: 3, moves: "" })), {
     size: 3,
@@ -649,7 +754,8 @@ test("fingerprint validation rejects everything that is not exactly the contract
     block({ size: 3 }),
     block({ moves: "R" }),
     JSON.stringify({ size: 3, moves: "R" }),
-    block({ size: 3, moves: "R", format: "layer-prefix/v2" }),
+    block({ size: 3, moves: "R", format: "layer-prefix/v3" }),
+    block({ size: 3, moves: "R", format: "Layer-Prefix/V2" }),
     block({ size: 3, moves: "R", format: 1 }),
     block({ size: "3", moves: "R" }),
     block({ size: 3.5, moves: "R" }),
