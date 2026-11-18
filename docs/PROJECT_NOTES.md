@@ -7,7 +7,8 @@ JSON block replaces scraping of the app's Moves line: one badge from the block's
 validated moves and size, placed before the block, with the preceding element
 excluded from text scanning. Invalid, unknown-spec, unsupported-format or
 oversized (16384 characters, 2000 turns) data falls back to ordinary scanning.
-Sizes 2 to 7 are linked, with layers up to 7 checked against the stated size.
+Sizes 2 to 7 (`layer-prefix/v1`) and 2 to 15 (`layer-prefix/v2`) are linked, with every
+layer checked against the stated size.
 The moves are sent unchanged apart from the whitespace-only cleanup. Updates
 reuse the badge node through the existing observer. Details and the known
 producer/extension gaps are in [FINGERPRINT.md](FINGERPRINT.md).
