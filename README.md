@@ -5,7 +5,7 @@
 ![Version 0.2.2](https://img.shields.io/badge/version-0.2.2-green.svg)
 ![Manifest V3](https://img.shields.io/badge/manifest-V3-4285F4?logo=googlechrome&logoColor=white)
 ![Chrome 109+](https://img.shields.io/badge/chrome-109%2B-4285F4?logo=googlechrome&logoColor=white)
-![Cubes 2x2 to 7x7](https://img.shields.io/badge/cubes-2%C3%972%20to%207%C3%977-orange.svg)
+![Cubes 2x2 to 7x7, fingerprints to 15x15](https://img.shields.io/badge/cubes-2%C3%972%20to%207%C3%977%2C%20fingerprints%20to%2015%C3%9715-orange.svg)
 ![No telemetry](https://img.shields.io/badge/telemetry-none-brightgreen.svg)
 
 A Chrome extension that finds Rubik's Cube notation on web pages and adds a small link that opens it in [CubeLab](https://wstein.github.io/cubelab/).
